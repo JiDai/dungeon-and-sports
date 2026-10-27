@@ -151,8 +151,8 @@ export function FicheTab() {
             dedans : 80 % commun, 12 % rare, 7 % ultra-rare, 1 % légendaire.
           </li>
           <li>
-            <strong>Sauvegarde</strong> : chaque action est enregistrée aussitôt dans la base Supabase du carnet,
-            qui garde tout l&apos;historique.
+            <strong>Sauvegarde</strong> : chaque action est enregistrée aussitôt dans ton carnet Supabase, qui
+            garde tout l&apos;historique. Connecte-toi avec la même adresse sur n&apos;importe quel appareil.
           </li>
           <li>
             <strong>Exercices</strong> : dans l&apos;onglet « Exercices », retire ce qui ne te convient pas et ajoute
@@ -222,6 +222,12 @@ export function FicheTab() {
           </div>
         </div>
       )}
+
+      <form method="post" action="/auth/signout" className="btn-row">
+        <button type="submit" className="roll-btn inline alt">
+          Se déconnecter
+        </button>
+      </form>
 
       <TwoStepButton
         className="reset-link"

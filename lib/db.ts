@@ -1,26 +1,18 @@
-import { createClient } from "@supabase/supabase-js";
 import { CATEGORY_ORDER, REWARD_TIERS } from "./data";
 import { convertLegacy, isLegacyState, type DefaultExercise } from "./legacy";
+import { supabaseServer } from "./supabase";
 import type { CarnetExport, CarnetView, Category, RewardTierId } from "./types";
 
 // Côté serveur uniquement : le carnet dans Supabase, schéma `sport` (voir supabase/migrations/).
-// Toutes les écritures passent par les fonctions Postgres, qui appliquent les règles du jeu.
+// Toutes les écritures passent par les fonctions Postgres, qui appliquent les règles du jeu ; elles tournent
+// avec le jeton de l'utilisateur connecté et n'agissent que sur son joueur (sport.assert_player).
 
-function open() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) throw new Error("SUPABASE_URL et SUPABASE_SECRET_KEY doivent être définis (voir .env.example)");
-  return createClient(url, key, {
-    db: { schema: "sport" },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+type Db = Awaited<ReturnType<typeof supabaseServer>>;
 
-// Un seul client et un seul joueur, conservés entre les rechargements à chaud du serveur de dev.
-type Db = ReturnType<typeof open>;
-const globalForDb = globalThis as unknown as { carnetDb?: Db; carnetPlayer?: Promise<string> };
-function getDb(): Db {
-  return (globalForDb.carnetDb ??= open());
+/** La session d'une requête : le client Supabase de l'utilisateur et son joueur. */
+export interface Session {
+  db: Db;
+  player: string;
 }
 
 /** Erreur à montrer telle quelle : règle du jeu refusée ou valeur invalide. */
@@ -33,8 +25,8 @@ export class CarnetError extends Error {
   }
 }
 
-async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Promise<T> {
-  const { data, error } = await getDb().rpc(fn, args);
+async function rpc<T>(db: Db, fn: string, args: Record<string, unknown> = {}): Promise<T> {
+  const { data, error } = await db.rpc(fn, args);
   if (!error) return data as T;
   // P0001 : refus d'une règle du jeu (message en français) ; 22xxx / 23xxx : valeur ou contrainte invalide.
   if (error.code === "P0001") throw new CarnetError(error.message, 409);
@@ -42,25 +34,24 @@ async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Promise<T
   throw new Error(`Supabase (${fn}) : ${error.message}`);
 }
 
-/** Le joueur local (sans compte) ; créé au premier appel. */
-function playerId(): Promise<string> {
-  globalForDb.carnetPlayer ??= rpc<string>("current_player").catch((e: unknown) => {
-    globalForDb.carnetPlayer = undefined;
-    throw e;
-  });
-  return globalForDb.carnetPlayer;
+/** La session de l'utilisateur connecté, ou null sans connexion. Son joueur est créé au premier passage. */
+export async function openSession(): Promise<Session | null> {
+  const db = await supabaseServer();
+  const { data } = await db.auth.getClaims();
+  if (!data?.claims) return null;
+  return { db, player: await rpc<string>(db, "current_player") };
 }
 
-export async function getCarnet(): Promise<CarnetView> {
-  return rpc<CarnetView>("get_carnet", { p_player: await playerId() });
+export async function getCarnet({ db, player }: Session): Promise<CarnetView> {
+  return rpc<CarnetView>(db, "get_carnet", { p_player: player });
 }
 
-export async function exportCarnet(): Promise<CarnetExport> {
-  return rpc<CarnetExport>("export_player", { p_player: await playerId() });
+export async function exportCarnet({ db, player }: Session): Promise<CarnetExport> {
+  return rpc<CarnetExport>(db, "export_player", { p_player: player });
 }
 
-export async function defaultExercises(): Promise<DefaultExercise[]> {
-  const { data, error } = await getDb()
+async function defaultExercises(db: Db): Promise<DefaultExercise[]> {
+  const { data, error } = await db
     .from("default_exercise")
     .select("category, flavor, name, detail, xp")
     .order("category")
@@ -139,16 +130,16 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
   reset: () => ["reset_player", {}],
 };
 
-export async function runAction(name: string, args: Args): Promise<unknown> {
-  if (name === "import") return importCarnet(args.data);
+export async function runAction(session: Session, name: string, args: Args): Promise<unknown> {
+  if (name === "import") return importCarnet(session, args.data);
   const action = Object.hasOwn(ACTIONS, name) ? ACTIONS[name] : undefined;
   if (!action) throw new CarnetError(`Action inconnue : ${name}`, 400);
   const [fn, params] = action(args);
-  return rpc(fn, { p_player: await playerId(), ...params });
+  return rpc(session.db, fn, { p_player: session.player, ...params });
 }
 
 /** Remplace le carnet par un export : format 2, ou ancien carnet (état complet ou { state }). */
-async function importCarnet(raw: unknown): Promise<{ warnings: string[] }> {
+async function importCarnet(session: Session, raw: unknown): Promise<{ warnings: string[] }> {
   const obj = raw as { format?: unknown; state?: unknown } | null;
   let data: CarnetExport;
   let warnings: string[] = [];
@@ -157,9 +148,9 @@ async function importCarnet(raw: unknown): Promise<{ warnings: string[] }> {
   } else {
     const state = obj && typeof obj === "object" && "state" in obj ? obj.state : obj;
     if (!isLegacyState(state)) throw new CarnetError("Ce texte ne ressemble pas à une sauvegarde du carnet.", 400);
-    const { player } = await getCarnet();
-    ({ data, warnings } = convertLegacy([{ savedAt: Date.now(), state }], await defaultExercises(), player.timeZone));
+    const { player } = await getCarnet(session);
+    ({ data, warnings } = convertLegacy([{ savedAt: Date.now(), state }], await defaultExercises(session.db), player.timeZone));
   }
-  await rpc("import_player", { p_player: await playerId(), p_data: data });
+  await rpc(session.db, "import_player", { p_player: session.player, p_data: data });
   return { warnings };
 }

@@ -29,6 +29,11 @@ async function request<T>(init?: RequestInit): Promise<T> {
   } catch {
     throw new Error("Le serveur du carnet ne répond pas. Tourne-t-il ?");
   }
+  if (res.status === 401) {
+    // Session expirée ou fermée ailleurs : retour à la page de connexion.
+    window.location.assign("/login");
+    throw new Error("Session expirée : reconnecte-toi.");
+  }
   const body = (await res.json().catch(() => null)) as { error?: string } | null;
   if (!res.ok) throw new Error(body?.error ?? `Erreur ${res.status}`);
   return body as T;

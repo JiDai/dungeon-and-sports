@@ -1,23 +1,11 @@
-import { CarnetError, exportCarnet, getCarnet, runAction } from "@/lib/db";
+import { CarnetError, exportCarnet, getCarnet, openSession, runAction } from "@/lib/db";
+import { isSameOrigin } from "@/lib/http";
 
-// Le carnet dans Supabase (schéma sport). GET : l'état affiché, ou l'export complet avec ?export.
-// POST { action, args } : une action du jeu ; renvoie son résultat et le carnet à jour.
+// Le carnet de l'utilisateur connecté (Supabase, schéma sport). GET : l'état affiché, ou l'export complet
+// avec ?export. POST { action, args } : une action du jeu ; renvoie son résultat et le carnet à jour.
 export const dynamic = "force-dynamic";
 
-const LOOPBACK_HOST = /^(localhost|127\.0\.0\.1|\[::1\]|[a-z0-9-]+\.localhost)(:\d+)?$/i;
-
-/** N'accepte que les requêtes locales et same-origin (pas d'accès réseau, pas de CSRF ni de DNS rebinding). */
-function isLocalRequest(req: Request): boolean {
-  const host = req.headers.get("host") ?? "";
-  if (!LOOPBACK_HOST.test(host)) return false;
-  const origin = req.headers.get("origin");
-  if (!origin) return true;
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
-}
+const UNAUTHORIZED = () => Response.json({ error: "Session expirée : reconnecte-toi." }, { status: 401 });
 
 function failure(e: unknown): Response {
   if (e instanceof CarnetError) return Response.json({ error: e.message }, { status: e.status });
@@ -28,21 +16,22 @@ function failure(e: unknown): Response {
 const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function GET(req: Request) {
-  if (!isLocalRequest(req)) return new Response(null, { status: 403 });
   try {
+    const session = await openSession();
+    if (!session) return UNAUTHORIZED();
     if (new URL(req.url).searchParams.has("export")) {
-      return Response.json(await exportCarnet(), {
+      return Response.json(await exportCarnet(session), {
         headers: { ...NO_STORE, "Content-Disposition": 'attachment; filename="carnet-de-cendres.json"' },
       });
     }
-    return Response.json(await getCarnet(), { headers: NO_STORE });
+    return Response.json(await getCarnet(session), { headers: NO_STORE });
   } catch (e) {
     return failure(e);
   }
 }
 
 export async function POST(req: Request) {
-  if (!isLocalRequest(req)) return new Response(null, { status: 403 });
+  if (!isSameOrigin(req)) return new Response(null, { status: 403 });
   let body: { action?: unknown; args?: unknown };
   try {
     body = await req.json();
@@ -52,8 +41,10 @@ export async function POST(req: Request) {
   if (typeof body.action !== "string") return Response.json({ error: "Action manquante" }, { status: 400 });
   const args = body.args && typeof body.args === "object" ? (body.args as Record<string, unknown>) : {};
   try {
-    const result = await runAction(body.action, args);
-    return Response.json({ result, carnet: await getCarnet() }, { headers: NO_STORE });
+    const session = await openSession();
+    if (!session) return UNAUTHORIZED();
+    const result = await runAction(session, body.action, args);
+    return Response.json({ result, carnet: await getCarnet(session) }, { headers: NO_STORE });
   } catch (e) {
     return failure(e);
   }

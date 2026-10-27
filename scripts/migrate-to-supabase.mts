@@ -75,7 +75,12 @@ async function main() {
   }
   console.log(`Archive : ${toArchive.length} sauvegarde(s) ajoutée(s), ${snapshots.length - toArchive.length} déjà présente(s).`);
 
-  // 2. Reconstruction et import.
+  // 2. Reconstruction et import, dans le carnet sans compte (avant `pnpm link-player`).
+  const { data: players, error: playersError } = await supabase.from("player").select("auth_user_id");
+  if (playersError) throw new Error(`Supabase (player) : ${playersError.message}`);
+  if (players.length > 0 && !players.some((p) => p.auth_user_id === null)) {
+    throw new Error("Le carnet est déjà rattaché à un compte : la reprise se fait avant `pnpm link-player`.");
+  }
   const player = await rpc<string>("current_player");
   const before = await rpc<CarnetView>("get_carnet", { p_player: player });
   if (!force && (before.progress.totalXp > 0 || before.chronicle.length > 0)) {
