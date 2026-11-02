@@ -27,7 +27,8 @@ export function QuetesTab() {
               <div className="qdetail">{quest.detail}</div>
               <div className="row">
                 <span className="xp-tag">
-                  +{quest.xp + carnet.questBonus} XP · {CATEGORY_LABELS[cat]}
+                  +{quest.xp} XP <span className="bonus-tag">✦ +{carnet.questBonus} XP bonus</span> ·{" "}
+                  {CATEGORY_LABELS[cat]}
                 </span>
                 <button type="button" disabled={done || busy} onClick={() => run("completeQuest", { category: cat })}>
                   {done ? "Faite" : "Valider"}
