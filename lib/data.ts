@@ -9,8 +9,9 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   volonte: "Volonté",
   souplesse: "Souplesse",
   vitalite: "Vitalité",
+  taichi: "Taï-chi",
 };
-export const CATEGORY_ORDER: Category[] = ["endurance", "force", "volonte", "souplesse", "vitalite"];
+export const CATEGORY_ORDER: Category[] = ["endurance", "force", "volonte", "souplesse", "vitalite", "taichi"];
 
 // Règles du jeu (XP, paliers, tirages) : dans la base, voir supabase/migrations/.
 export const REWARD_TIERS: RewardTier[] = [

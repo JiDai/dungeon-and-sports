@@ -1,4 +1,4 @@
-export type Category = "endurance" | "force" | "volonte" | "souplesse" | "vitalite";
+export type Category = "endurance" | "force" | "volonte" | "souplesse" | "vitalite" | "taichi";
 
 export type TabId = "fiche" | "exercices" | "quetes" | "suivi" | "recompenses" | "chronique";
 
