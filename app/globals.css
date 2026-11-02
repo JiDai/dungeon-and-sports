@@ -164,6 +164,12 @@ h1{
 .quest .qdetail{font-size:13px; color:var(--text-soft); margin-bottom:12px;}
 .quest .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
 .quest .xp-tag{font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px; color:var(--honey-dark);}
+.quest .bonus-tag{
+  display:inline-block; margin:0 2px; padding:2px 9px; border-radius:999px;
+  background:var(--honey); color:#fff; font-weight:700;
+  box-shadow:0 2px 8px rgba(219,165,61,0.35);
+}
+.quest.done .bonus-tag{box-shadow:none;}
 .quest button{
   background:var(--sage); border:1px solid var(--sage); color:#fff;
   font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px;
