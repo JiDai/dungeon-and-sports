@@ -1,9 +1,10 @@
 "use client";
 
 import { useCarnet } from "../CarnetProvider";
+import { ExercisePicker } from "../ExercisePicker";
 import { StepsForm } from "../StepsForm";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/data";
-import { activeQuest, isDone, poolFor } from "@/lib/carnet";
+import { activeQuest, isDone } from "@/lib/carnet";
 
 export function QuetesTab() {
   const { carnet, act, busy } = useCarnet();
@@ -14,11 +15,11 @@ export function QuetesTab() {
     <>
       <div className="panel">
         <h2>Le Plateau des Quêtes</h2>
+        <p className="hint">Une quête accomplie rapporte {carnet.questBonus} XP de plus que la compétence seule.</p>
         {CATEGORY_ORDER.map((cat) => {
           const quest = activeQuest(carnet, cat);
           if (!quest) return null;
           const done = isDone(carnet, "today", cat);
-          const canRedraw = !done && poolFor(carnet, cat).length > 1;
           return (
             <div className={`quest${done ? " done" : ""}`} key={cat}>
               <div className="flavor">{quest.flavor}</div>
@@ -26,18 +27,11 @@ export function QuetesTab() {
               <div className="qdetail">{quest.detail}</div>
               <div className="row">
                 <span className="xp-tag">
-                  +{quest.xp} XP · {CATEGORY_LABELS[cat]}
+                  +{quest.xp + carnet.questBonus} XP · {CATEGORY_LABELS[cat]}
                 </span>
-                <div className="btns">
-                  {canRedraw && (
-                    <button type="button" className="redraw" disabled={busy} onClick={() => run("redrawQuest", { category: cat })}>
-                      Piocher à nouveau
-                    </button>
-                  )}
-                  <button type="button" disabled={done || busy} onClick={() => run("completeQuest", { category: cat })}>
-                    {done ? "Faite" : "Valider"}
-                  </button>
-                </div>
+                <button type="button" disabled={done || busy} onClick={() => run("completeQuest", { category: cat })}>
+                  {done ? "Faite" : "Valider"}
+                </button>
               </div>
             </div>
           );
@@ -45,24 +39,17 @@ export function QuetesTab() {
       </div>
 
       <div className="panel">
+        <h2>Entraînement Libre</h2>
+        <p className="hint">N&apos;importe quelle compétence, une fois par jour chacune.</p>
+        <ExercisePicker />
+      </div>
+
+      <div className="panel">
         <h2>Rattrapage de la Veille</h2>
         <p className="hint">
-          Un oubli d&apos;hier ? Coche ce que tu as réellement fait — valable uniquement pour la journée précédente.
+          Un oubli d&apos;hier ? Choisis ce que tu as réellement fait — valable uniquement pour la journée précédente.
         </p>
-        {CATEGORY_ORDER.map((cat) => {
-          const done = isDone(carnet, "yesterday", cat);
-          return (
-            <div className={`quest${done ? " done" : ""}`} key={cat}>
-              <div className="qname">{CATEGORY_LABELS[cat]}</div>
-              <div className="row">
-                <span className="xp-tag">+{carnet.catchUpXp[cat]} XP</span>
-                <button type="button" disabled={done || busy} onClick={() => run("completeYesterday", { category: cat })}>
-                  {done ? "Faite" : "J'ai fait ça hier"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+        <ExercisePicker yesterday />
         <StepsForm yesterday />
       </div>
     </>

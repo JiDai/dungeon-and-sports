@@ -54,10 +54,11 @@ export function ExercicesTab() {
   return (
     <>
       <div className="panel">
-        <h2>Mes Exercices</h2>
+        <h2>Mes Compétences</h2>
         <p className="hint">
           Retire ce qui ne te convient pas et ajoute tes propres exercices. Les quêtes du jour sont tirées au hasard dans
-          ces listes. Garde au moins un exercice par catégorie.
+          ces listes, et chacun peut être validé librement depuis l&apos;onglet Quêtes. Garde au moins un exercice par
+          catégorie.
         </p>
         {CATEGORY_ORDER.map((c) => (
           <div className="skill-block" key={c}>
