@@ -103,9 +103,11 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
     if (!Array.isArray(a.items) || a.items.length > 200) throw bad("liste");
     return ["set_wishlist", { p_tier: tier(a.tier), p_items: a.items.map((i) => text(i, 200, "souhait")) }];
   },
-  redrawQuest: (a) => ["redraw_quest", { p_category: category(a.category) }],
   completeQuest: (a) => ["complete_quest", { p_category: category(a.category) }],
-  completeYesterday: (a) => ["complete_yesterday", { p_category: category(a.category) }],
+  completeExercise: (a) => [
+    "complete_exercise",
+    { p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice"), p_yesterday: a.yesterday === true },
+  ],
   recordSteps: (a) => ["record_steps", { p_steps: int(a.steps, 0, 200_000, "pas"), p_yesterday: a.yesterday === true }],
   addExercise: (a) => [
     "add_exercise",

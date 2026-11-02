@@ -3,7 +3,6 @@
 import type { ComponentType } from "react";
 import { CarnetProvider, useCarnet } from "./CarnetProvider";
 import { ChroniqueTab } from "./tabs/ChroniqueTab";
-import { CompetencesTab } from "./tabs/CompetencesTab";
 import { ExercicesTab } from "./tabs/ExercicesTab";
 import { FicheTab } from "./tabs/FicheTab";
 import { QuetesTab } from "./tabs/QuetesTab";
@@ -14,7 +13,6 @@ import type { TabId } from "@/lib/types";
 
 const TAB_COMPONENTS: Record<TabId, ComponentType> = {
   fiche: FicheTab,
-  competences: CompetencesTab,
   exercices: ExercicesTab,
   quetes: QuetesTab,
   suivi: SuiviTab,

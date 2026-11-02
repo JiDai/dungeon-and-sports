@@ -1,6 +1,6 @@
 export type Category = "endurance" | "force" | "volonte" | "souplesse" | "vitalite";
 
-export type TabId = "fiche" | "competences" | "exercices" | "quetes" | "suivi" | "recompenses" | "chronique";
+export type TabId = "fiche" | "exercices" | "quetes" | "suivi" | "recompenses" | "chronique";
 
 export type RewardTierId = "commun" | "rare" | "ultrarare" | "legendaire";
 
@@ -26,7 +26,7 @@ export interface ChronicleEntry {
   at: string;
   day: string | null;
   kind: "activity" | "level_up" | "reward" | "cagnotte_add" | "cagnotte_cashout" | "legacy";
-  activity_kind: "quest" | "catch_up" | "steps" | null;
+  activity_kind: "quest" | "exercise" | "catch_up" | "steps" | null;
   category: Category | null;
   name: string | null;
   detail: string | null;
@@ -46,12 +46,15 @@ export interface CarnetView {
   yesterday: string;
   progress: { totalXp: number; level: number; xp: number; xpForNextLevel: number; pendingRewards: number };
   stats: Record<Category, number>;
-  catchUpXp: Record<Category, number>;
+  /** XP en plus quand l'exercice validé est la quête du jour. */
+  questBonus: number;
   exercises: Exercise[];
   /** Exercice tiré aujourd'hui, par catégorie. */
   draws: Partial<Record<Category, number>>;
   /** Déjà validé : catégories, et "steps" pour les pas. */
   done: { today: (Category | "steps")[]; yesterday: (Category | "steps")[] };
+  /** Exercices déjà validés (quête ou choix libre). */
+  doneExercises: { today: number[]; yesterday: number[] };
   rerollAvailable: boolean;
   wishlists: Record<RewardTierId, string[]>;
   cagnotte: { total: number; entries: { id: number; label: string; amount: number; at: string }[] };
@@ -86,7 +89,7 @@ export interface CarnetExport {
   }[];
   draws: { day: string; category: Category; exercise_ref: number; drawn_at: string }[];
   activities: {
-    kind: "quest" | "catch_up" | "steps" | "opening_balance";
+    kind: "quest" | "exercise" | "catch_up" | "steps" | "opening_balance";
     day: string;
     category: Category | null;
     exercise_ref?: number | null;
