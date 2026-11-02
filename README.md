@@ -8,6 +8,7 @@ pnpm dev        # http://carnet.localhost:3417
 pnpm lint       # oxlint
 pnpm typecheck
 pnpm build
+pnpm db:migrate # applique les migrations SQL en attente (DATABASE_URL)
 ```
 
 ## Structure
@@ -19,6 +20,7 @@ pnpm build
 - `lib/db.ts` — accès Supabase avec la session de l'utilisateur : liste fermée d'actions, validation des arguments
 - `lib/supabase.ts`, `proxy.ts`, `app/login/`, `app/auth/` — connexion Supabase Auth (lien magique)
 - `scripts/link-player.mts` — crée un compte et y rattache le carnet
+- `scripts/migrate.mts` — applique les migrations SQL en attente (`pnpm db:migrate`)
 - `lib/legacy.ts` — conversion des sauvegardes de l'ancien carnet (état JSON complet) vers le nouveau modèle
 - `lib/carnet.ts` — lecture de la vue et textes de la chronique
 - `supabase/migrations/` — schéma `sport` : tables, vues, fonctions (règles du jeu)
@@ -50,8 +52,10 @@ les exports de l'ancienne version.
 
 1. Copie `.env.example` en `.env.local` et remplis `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` et
    `SUPABASE_SECRET_KEY`.
-2. Applique, dans l'ordre, les fichiers de `supabase/migrations/` (SQL Editor du tableau de bord, ou
-   `supabase db push`).
+2. Applique les migrations : renseigne `DATABASE_URL` dans `.env.local`, puis `pnpm db:migrate`
+   (`--dry-run` pour voir ce qui est en attente). Le script note ce qui est appliqué dans
+   `supabase_migrations.schema_migrations`. Base déjà remplie à la main (SQL Editor) : indique une fois la
+   dernière migration appliquée, `pnpm db:migrate --baseline 20261028120000`.
 3. Expose le schéma `sport` : Project Settings → Data API → « Exposed schemas », ajoute `sport`.
 4. Reprends l'ancien carnet : `pnpm migrate:supabase`. Le script archive les sauvegardes SQLite brutes
    (`sport.carnet_saves`), reconstruit les événements datés en comparant les sauvegardes successives, les
