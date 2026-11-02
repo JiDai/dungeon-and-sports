@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { appUrl } from "@/lib/http";
 import { supabaseServer } from "@/lib/supabase";
 
 // Arrivée depuis le lien de l'e-mail : ouvre la session (cookies), puis le carnet.
@@ -18,5 +19,5 @@ export async function GET(req: Request) {
       ? await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
       : { error: new Error("Lien incomplet") };
 
-  return NextResponse.redirect(new URL(error ? "/login?error=lien" : "/", req.url), 303);
+  return NextResponse.redirect(appUrl(req, error ? "/login?error=lien" : "/"), 303);
 }
