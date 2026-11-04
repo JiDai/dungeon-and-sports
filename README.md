@@ -33,8 +33,9 @@ validées (`activity`), récompenses tirées (`reward_draw`), pesées, mises en 
 stats, la cagnotte et la chronique sont **calculés** par des vues (`player_progress`, `player_stats`,
 `cagnotte_balance`, `chronicle`) : rien ne peut se désynchroniser, et la chronique n'a plus de limite.
 
-Les règles du jeu (XP d'une compétence, +10 XP quand c'est la quête du jour, paliers de pas, chaque
-compétence validable une fois par jour — aujourd'hui ou en rattrapage de la veille —, un retirage par jour,
+Les règles du jeu (XP d'une compétence, +10 XP quand c'est la quête du jour, paliers de pas, une quête par
+catégorie et par jour, compétences libres validables plusieurs fois — aujourd'hui ou en rattrapage de la
+veille —, un retirage par jour,
 tirage du dé) sont appliquées par les fonctions Postgres, en une transaction ; « aujourd'hui » est
 calculé dans le fuseau du joueur.
 

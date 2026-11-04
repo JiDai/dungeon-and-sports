@@ -11,6 +11,8 @@ export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
   const [selected, setSelected] = useState("");
   const [feedback, setFeedback] = useState("");
   const doneIds = carnet.doneExercises[yesterday ? "yesterday" : "today"];
+  // Un exercice peut être validé plusieurs fois : on compte les passages.
+  const countOf = (id: number) => doneIds.filter((d) => d === id).length;
   const doneList = carnet.exercises.filter((e) => doneIds.includes(e.id));
   const inputId = yesterday ? "exercisePickYesterday" : "exercisePick";
 
@@ -32,7 +34,7 @@ export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
       return;
     }
     setSelected("");
-    if (xp === null) setFeedback(yesterday ? "Déjà validée pour hier." : "Déjà validée aujourd'hui.");
+    if (xp === null) setFeedback("Validation refusée, réessaie.");
     else setFeedback(`${yesterday ? "Rattrapage enregistré" : "Compétence validée"} — +${xp} XP.`);
   };
 
@@ -46,11 +48,11 @@ export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
             {CATEGORY_ORDER.map((cat) => (
               <optgroup key={cat} label={CATEGORY_LABELS[cat]}>
                 {poolFor(carnet, cat).map((q) => {
-                  const done = doneIds.includes(q.id);
+                  const count = countOf(q.id);
                   const quest = isQuest(q.id, cat);
                   return (
-                    <option key={q.id} value={q.id} disabled={done}>
-                      {`${q.name} — +${q.xp + (quest ? carnet.questBonus : 0)} XP${quest ? " (quête du jour)" : ""}${done ? " ✓" : ""}`}
+                    <option key={q.id} value={q.id}>
+                      {`${q.name} — +${q.xp + (quest ? carnet.questBonus : 0)} XP${quest ? " (quête du jour)" : ""}${count ? ` ✓${count > 1 ? ` ×${count}` : ""}` : ""}`}
                     </option>
                   );
                 })}
@@ -67,7 +69,10 @@ export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
         <ul className="skill-items">
           {doneList.map((q) => (
             <li key={q.id}>
-              <span>✓ {q.name}</span>
+              <span>
+                ✓ {q.name}
+                {countOf(q.id) > 1 && ` ×${countOf(q.id)}`}
+              </span>
               <span className="sxp">{CATEGORY_LABELS[q.category]}</span>
             </li>
           ))}

@@ -41,7 +41,7 @@ export function QuetesTab() {
 
       <div className="panel">
         <h2>Entraînement Libre</h2>
-        <p className="hint">N&apos;importe quelle compétence, une fois par jour chacune.</p>
+        <p className="hint">N&apos;importe quelle compétence, autant de fois que tu veux dans la journée.</p>
         <ExercisePicker />
       </div>
 
