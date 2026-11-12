@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /** Durée totale de l'animation ; doit rester alignée sur `levelup-out` dans globals.css. */
 const DURATION = 4600;
@@ -22,7 +23,8 @@ export function LevelUpOverlay({ level, onDone }: { level: number; onDone: () =>
     return () => window.clearTimeout(id);
   }, [onDone]);
 
-  return (
+  // Rendu dans <body>, comme le lancer de dé : aucun transform d'un parent ne peut le décaler.
+  return createPortal(
     <output className="levelup" aria-live="polite">
       <div className="levelup-card">
         <svg className="levelup-burst" viewBox="0 0 200 200" aria-hidden="true">
@@ -47,6 +49,7 @@ export function LevelUpOverlay({ level, onDone }: { level: number; onDone: () =>
           <span className="levelup-hint">Un lancer de dé t&apos;attend</span>
         </div>
       </div>
-    </output>
+    </output>,
+    document.body,
   );
 }
