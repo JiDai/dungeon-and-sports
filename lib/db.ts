@@ -3,9 +3,9 @@ import { convertLegacy, isLegacyState, type DefaultExercise } from "./legacy";
 import { supabaseServer } from "./supabase";
 import type { CarnetExport, CarnetView, Category, RewardTierId } from "./types";
 
-// Côté serveur uniquement : le carnet dans Supabase, schéma `sport` (voir supabase/migrations/).
+// Côté serveur uniquement : le carnet dans Supabase, schéma `public` (voir supabase/migrations/).
 // Toutes les écritures passent par les fonctions Postgres, qui appliquent les règles du jeu ; elles tournent
-// avec le jeton de l'utilisateur connecté et n'agissent que sur son joueur (sport.assert_player).
+// avec le jeton de l'utilisateur connecté et n'agissent que sur son joueur (assert_player).
 
 type Db = Awaited<ReturnType<typeof supabaseServer>>;
 

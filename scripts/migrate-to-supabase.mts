@@ -1,10 +1,10 @@
-// Reprend l'ancien carnet (base SQLite data/carnet.db) dans le modèle Supabase du schéma `sport`.
+// Reprend l'ancien carnet (base SQLite data/carnet.db) dans le modèle Supabase.
 //
 //   node --env-file=.env.local scripts/migrate-to-supabase.mts [--force] [export.json ...]
 //
-// 1. Archive les sauvegardes brutes dans sport.carnet_saves (filet de sécurité ; sans doublons).
+// 1. Archive les sauvegardes brutes dans carnet_saves (filet de sécurité ; sans doublons).
 // 2. Reconstruit les faits datés en comparant les sauvegardes successives (lib/legacy.ts) et remplace
-//    le carnet du joueur local par le résultat (sport.import_player, tout ou rien).
+//    le carnet du joueur local par le résultat (import_player, tout ou rien).
 // 3. Vérifie que niveau, XP, stats, récompenses en attente et cagnotte retombent sur le dernier état.
 //
 // Les fichiers JSON en argument (exports « Fiche → Exporter » de l'ancienne version) s'ajoutent à l'historique.
@@ -48,7 +48,6 @@ async function main() {
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) throw new Error("SUPABASE_URL et SUPABASE_SECRET_KEY doivent être définis (voir .env.example)");
   const supabase = createClient(url, key, {
-    db: { schema: "sport" },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const rpc = async <T,>(fn: string, args: Record<string, unknown> = {}): Promise<T> => {

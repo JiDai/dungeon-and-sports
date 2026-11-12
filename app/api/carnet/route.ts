@@ -1,7 +1,7 @@
 import { CarnetError, exportCarnet, getCarnet, openSession, runAction } from "@/lib/db";
 import { isSameOrigin } from "@/lib/http";
 
-// Le carnet de l'utilisateur connecté (Supabase, schéma sport). GET : l'état affiché, ou l'export complet
+// Le carnet de l'utilisateur connecté (Supabase). GET : l'état affiché, ou l'export complet
 // avec ?export. POST { action, args } : une action du jeu ; renvoie son résultat et le carnet à jour.
 export const dynamic = "force-dynamic";
 

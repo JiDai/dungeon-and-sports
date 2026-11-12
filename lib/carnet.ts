@@ -1,4 +1,4 @@
-// Lecture de la vue renvoyée par sport.get_carnet. Les règles du jeu vivent dans la base.
+// Lecture de la vue renvoyée par get_carnet. Les règles du jeu vivent dans la base.
 import { CATEGORY_LABELS, REWARD_TIERS } from "./data";
 import type { CarnetView, Category, ChronicleEntry, Exercise, RewardTier, RewardTierId } from "./types";
 

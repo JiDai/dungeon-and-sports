@@ -1,5 +1,5 @@
 // Conversion des anciennes sauvegardes (un état JSON complet par sauvegarde) vers l'export format 2,
-// importable par sport.import_player. En comparant les sauvegardes successives, on retrouve les vrais
+// importable par import_player. En comparant les sauvegardes successives, on retrouve les vrais
 // événements datés : quêtes validées, pas, récompenses, cagnotte. Ce qui précède la première sauvegarde
 // devient un solde d'ouverture, calculé pour que niveau, XP et stats retombent exactement sur le dernier état.
 // Extension explicite : ce module est aussi chargé directement par Node (scripts/migrate-to-supabase.mts).
