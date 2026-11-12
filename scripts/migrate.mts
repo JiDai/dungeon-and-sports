@@ -37,9 +37,9 @@ async function main() {
         if (!dryRun) await record(sql, f, null);
         applied.add(f.slice(0, 14));
       }
-    } else if (applied.size === 0 && (await sql`select to_regnamespace('sport') as s`)[0].s) {
+    } else if (applied.size === 0 && (await sql`select (to_regnamespace('sport') is not null or to_regclass('public.player') is not null) as s`)[0].s) {
       throw new Error(
-        "Le schéma sport existe mais aucune migration n'est notée : la base a été remplie à la main.\n" +
+        "Les tables du carnet existent mais aucune migration n'est notée : la base a été remplie à la main.\n" +
           "Indique la dernière migration déjà appliquée : pnpm db:migrate --baseline <version>",
       );
     }

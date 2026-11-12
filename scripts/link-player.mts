@@ -16,7 +16,7 @@ async function main() {
   if (!url || !key) throw new Error("SUPABASE_URL et SUPABASE_SECRET_KEY doivent être définis (voir .env.example)");
   const options = { auth: { persistSession: false, autoRefreshToken: false } };
   const admin = createClient(url, key, options).auth.admin;
-  const sport = createClient(url, key, { ...options, db: { schema: "sport" } });
+  const db = createClient(url, key, options);
 
   // 1. Le compte.
   let userId: string | undefined;
@@ -36,7 +36,7 @@ async function main() {
   }
 
   // 2. Le joueur local à rattacher.
-  const { data: players, error } = await sport.from("player").select("id, name, auth_user_id").order("created_at");
+  const { data: players, error } = await db.from("player").select("id, name, auth_user_id").order("created_at");
   if (error) throw new Error(`Supabase (player) : ${error.message}`);
   if (players.some((p) => p.auth_user_id === userId) && !players.some((p) => p.auth_user_id === null)) {
     console.log("Ce compte a déjà son carnet : rien à faire.");
@@ -48,18 +48,18 @@ async function main() {
   // 3. Un joueur vide créé par une connexion antérieure laisse la place.
   const existing = players.find((p) => p.auth_user_id === userId);
   if (existing) {
-    const { count, error: countError } = await sport
+    const { count, error: countError } = await db
       .from("activity")
       .select("id", { count: "exact", head: true })
       .eq("player_id", existing.id);
     if (countError) throw new Error(`Supabase (activity) : ${countError.message}`);
     if (count) throw new Error("Ce compte a déjà un carnet avec de la progression : rattachement annulé.");
-    const { error: deleteError } = await sport.from("player").delete().eq("id", existing.id);
+    const { error: deleteError } = await db.from("player").delete().eq("id", existing.id);
     if (deleteError) throw new Error(`Supabase (player) : ${deleteError.message}`);
     console.log("Carnet vide du compte supprimé.");
   }
 
-  const { error: linkError } = await sport.from("player").update({ auth_user_id: userId }).eq("id", local.id);
+  const { error: linkError } = await db.from("player").update({ auth_user_id: userId }).eq("id", local.id);
   if (linkError) throw new Error(`Supabase (player) : ${linkError.message}`);
   console.log(`Carnet « ${local.name || "sans nom"} » rattaché à ${email}.`);
 }

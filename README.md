@@ -23,12 +23,12 @@ pnpm db:migrate # applique les migrations SQL en attente (DATABASE_URL)
 - `scripts/migrate.mts` — applique les migrations SQL en attente (`pnpm db:migrate`)
 - `lib/legacy.ts` — conversion des sauvegardes de l'ancien carnet (état JSON complet) vers le nouveau modèle
 - `lib/carnet.ts` — lecture de la vue et textes de la chronique
-- `supabase/migrations/` — schéma `sport` : tables, vues, fonctions (règles du jeu)
+- `supabase/migrations/` — schéma `public` : tables, vues, fonctions (règles du jeu)
 - `scripts/migrate-to-supabase.mts` — reprise unique de l'ancienne base SQLite `data/carnet.db`
 
 ## Données
 
-Le carnet vit dans Supabase, schéma `sport`. On y enregistre des **faits**, jamais réécrits : quêtes
+Le carnet vit dans Supabase, schéma `public`. On y enregistre des **faits**, jamais réécrits : quêtes
 validées (`activity`), récompenses tirées (`reward_draw`), pesées, mises en cagnotte… Le niveau, l'XP, les
 stats, la cagnotte et la chronique sont **calculés** par des vues (`player_progress`, `player_stats`,
 `cagnotte_balance`, `chronicle`) : rien ne peut se désynchroniser, et la chronique n'a plus de limite.
@@ -57,9 +57,9 @@ les exports de l'ancienne version.
    (`--dry-run` pour voir ce qui est en attente). Le script note ce qui est appliqué dans
    `supabase_migrations.schema_migrations`. Base déjà remplie à la main (SQL Editor) : indique une fois la
    dernière migration appliquée, `pnpm db:migrate --baseline 20261028120000`.
-3. Expose le schéma `sport` : Project Settings → Data API → « Exposed schemas », ajoute `sport`.
+3. Vérifie que le schéma `public` est exposé (Project Settings → Data API → « Exposed schemas », c'est le cas par défaut).
 4. Reprends l'ancien carnet : `pnpm migrate:supabase`. Le script archive les sauvegardes SQLite brutes
-   (`sport.carnet_saves`), reconstruit les événements datés en comparant les sauvegardes successives, les
+   (`carnet_saves`), reconstruit les événements datés en comparant les sauvegardes successives, les
    importe, puis vérifie que niveau, XP, stats, récompenses en attente et cagnotte retombent sur le dernier
    état. Si le carnet Supabase contient déjà de la progression, il faut `--force` pour le remplacer.
 5. Rattache le carnet à ton compte : `pnpm link-player ton@adresse` (crée le compte au besoin).

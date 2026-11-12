@@ -10,7 +10,7 @@ export interface RewardTier {
   symbol: string;
 }
 
-/* ---------- Ce que renvoie sport.get_carnet ---------- */
+/* ---------- Ce que renvoie get_carnet ---------- */
 
 export interface Exercise {
   id: number;
@@ -21,7 +21,7 @@ export interface Exercise {
   xp: number;
 }
 
-/** Une ligne de la vue sport.chronicle. */
+/** Une ligne de la vue chronicle. */
 export interface ChronicleEntry {
   at: string;
   day: string | null;
@@ -69,7 +69,7 @@ export interface DrawnReward {
   description: string | null;
 }
 
-/* ---------- Export format 2 (sport.export_player / sport.import_player) ---------- */
+/* ---------- Export format 2 (export_player / import_player) ---------- */
 
 export interface CarnetExport {
   app: "carnet-de-cendres";
