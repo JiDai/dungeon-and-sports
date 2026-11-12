@@ -214,7 +214,9 @@ h1{
 
 /* Code couleur des rangs : commun vert, rare bleu, ultra-rare violet, légendaire orange.
    Chaque élément marqué d'un rang reçoit --tier-color (vif) et --tier-dark (texte). */
-.tier-symbol.commun, .tier-badge.commun, .reward-card.commun, .d6.commun, .diceroll{--tier-color:var(--sage); --tier-dark:var(--sage-dark);}
+/* Dé qui roule : rang encore inconnu, couleur neutre. */
+.diceroll{--tier-color:var(--honey); --tier-dark:var(--honey-dark);}
+.tier-symbol.commun, .tier-badge.commun, .reward-card.commun, .d6.commun, .diceroll.commun{--tier-color:var(--sage); --tier-dark:var(--sage-dark);}
 .tier-symbol.rare, .tier-badge.rare, .reward-card.rare, .d6.rare, .diceroll.rare{--tier-color:var(--rare); --tier-dark:var(--rare-dark);}
 .tier-symbol.ultrarare, .tier-badge.ultrarare, .reward-card.ultrarare, .d6.ultrarare, .diceroll.ultrarare{--tier-color:var(--ultra); --tier-dark:var(--ultra-dark);}
 .tier-symbol.legendaire, .tier-badge.legendaire, .reward-card.legendaire, .d6.legendaire, .diceroll.legendaire{--tier-color:var(--orange); --tier-dark:var(--orange-dark);}
