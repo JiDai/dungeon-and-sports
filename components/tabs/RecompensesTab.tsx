@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCarnet, useSavedText } from "../CarnetProvider";
+import { DiceRollOverlay } from "../DiceRollOverlay";
+import { TierSymbol } from "../TierSymbol";
 import { emptyWishlistText, joinList, parseList, tierOf } from "@/lib/carnet";
+import { REWARD_TIERS } from "@/lib/data";
 import type { DrawnReward, RewardTierId } from "@/lib/types";
 
 const WISHLISTS: { tier: RewardTierId; label: string; rows: number; placeholder: string }[] = [
@@ -34,7 +37,10 @@ function WishlistField({ tier, label, rows, placeholder, className }: (typeof WI
   );
   return (
     <div className={`field ${className}`}>
-      <label htmlFor={`wishlist-${tier}`}>{label}</label>
+      <label htmlFor={`wishlist-${tier}`} className="wishlist-label">
+        <TierSymbol tier={tier} />
+        {label}
+      </label>
       <textarea
         id={`wishlist-${tier}`}
         rows={rows}
@@ -132,6 +138,12 @@ function Cagnotte() {
   );
 }
 
+/** En dev seulement : la valeur de `?dice` dans l'URL, ou null. */
+function devDiceParam(): string | null {
+  if (process.env.NODE_ENV === "production") return null;
+  return new URLSearchParams(window.location.search).get("dice");
+}
+
 export function RecompensesTab() {
   const { carnet, act, busy } = useCarnet();
   const [rolling, setRolling] = useState(false);
@@ -139,8 +151,25 @@ export function RecompensesTab() {
   const [result, setResult] = useState<DrawnReward | null>(null);
   const [rolls, setRolls] = useState(0);
   const interval = useRef<number | undefined>(undefined);
+  // Lancer affiché au centre : reward null tant que le tirage est en cours.
+  const [overlay, setOverlay] = useState<{ reward: DrawnReward | null } | null>(() =>
+    devDiceParam() === null ? null : { reward: null },
+  );
+  const endOverlay = useCallback(() => setOverlay(null), []);
 
   useEffect(() => () => window.clearInterval(interval.current), []);
+
+  // En dev seulement : `?dice` (ou `?dice=legendaire`, `rare`…) rejoue le lancer, sans tirage réel.
+  useEffect(() => {
+    const wanted = devDiceParam();
+    if (wanted === null) return;
+    const tier = REWARD_TIERS.find((t) => t.tier === wanted) ?? REWARD_TIERS[Math.floor(Math.random() * REWARD_TIERS.length)];
+    const id = window.setTimeout(
+      () => setOverlay({ reward: { tier: tier.tier, name: "Récompense de test", description: "Tirage factice (?dice)" } }),
+      1200,
+    );
+    return () => window.clearTimeout(id);
+  }, []);
 
   const pending = carnet.progress.pendingRewards;
 
@@ -148,13 +177,14 @@ export function RecompensesTab() {
     if (rolling) return;
     if (isReroll ? !carnet.rerollAvailable : pending <= 0) return;
     setRolling(true);
+    setOverlay({ reward: null });
     // Le tirage se fait côté serveur pendant que le dé roule ; on montre le résultat à la fin des deux.
     const drawn = act<DrawnReward>("drawReward", { reroll: isReroll });
     const spun = new Promise<void>((resolve) => {
       let ticks = 0;
       interval.current = window.setInterval(() => {
         setFace(String(1 + Math.floor(Math.random() * 6)));
-        if (++ticks > 8) {
+        if (++ticks > 12) {
           window.clearInterval(interval.current);
           resolve();
         }
@@ -163,11 +193,13 @@ export function RecompensesTab() {
     Promise.all([drawn, spun]).then(
       ([reward]) => {
         setResult(reward);
+        setOverlay({ reward });
         setRolls((n) => n + 1);
         setRolling(false);
       },
       () => {
         window.clearInterval(interval.current);
+        setOverlay(null);
         setRolling(false);
       },
     );
@@ -175,14 +207,14 @@ export function RecompensesTab() {
 
   const resultTier = result ? tierOf(result.tier) : null;
   const diceFace = rolling ? face : (resultTier?.symbol ?? "?");
-  const tierClass = resultTier && resultTier.tier !== "commun" ? ` ${resultTier.tier}` : "";
+  const tierClass = resultTier ? ` ${resultTier.tier}` : "";
 
   return (
     <>
       <div className="panel">
         <h2>Sanctuaire de la Récompense</h2>
         <div className="dice-zone">
-          <div className={`d6${rolling ? " rolling" : ""}`}>{diceFace}</div>
+          <div className={`d6${rolling ? " rolling" : tierClass}`}>{diceFace}</div>
           <button type="button" className="roll-btn" disabled={rolling || busy || pending <= 0} onClick={() => roll(false)}>
             {pending > 0 ? `Lancer le dé (${pending} en attente)` : "Lancer le dé"}
           </button>
@@ -206,6 +238,7 @@ export function RecompensesTab() {
       </div>
 
       <Cagnotte />
+      {overlay && <DiceRollOverlay reward={overlay.reward} onDone={endOverlay} />}
     </>
   );
 }
