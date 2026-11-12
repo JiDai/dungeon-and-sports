@@ -4,7 +4,7 @@ Carnet de quêtes sportives façon jeu de rôle — Next.js (App Router) + TypeS
 
 ```bash
 pnpm install
-pnpm dev        # http://carnet.localhost:3417
+pnpm dev        # http://carnet.localhost:3000
 pnpm lint       # oxlint
 pnpm typecheck
 pnpm build
@@ -64,7 +64,7 @@ les exports de l'ancienne version.
    état. Si le carnet Supabase contient déjà de la progression, il faut `--force` pour le remplacer.
 5. Rattache le carnet à ton compte : `pnpm link-player ton@adresse` (crée le compte au besoin).
 6. Authentication → URL Configuration : « Site URL » = l'adresse de production, et dans « Redirect URLs »
-   `https://<ton-domaine>/auth/confirm` ainsi que `http://carnet.localhost:3417/auth/confirm` pour le dev.
+   `https://<ton-domaine>/auth/confirm` ainsi que `http://carnet.localhost:3000/auth/confirm` pour le dev.
 7. Authentication → Sign In / Providers : désactive « Allow new users to sign up » (personne d'autre ne
    peut alors créer de compte).
 
@@ -72,7 +72,7 @@ les exports de l'ancienne version.
 
 Variables d'environnement : `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY`. Ne mets pas la clé secrète.
 
-En dev, le serveur écoute sur `127.0.0.1:3417` uniquement. Utilise `http://carnet.localhost:3417` (l'adresse
+En dev, le serveur écoute sur le port 3000. Utilise `http://carnet.localhost:3000` (l'adresse
 déclarée dans les Redirect URLs) : le lien de connexion doit s'ouvrir sur la même adresse que la demande.
 
 Pour récupérer la progression de la version HTML : onglet Fiche → « Exporter » dans l'ancienne version,

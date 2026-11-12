@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { STORAGE_KEY, TABS } from "@/lib/data";
 import type { CarnetView, TabId } from "@/lib/types";
+import { LevelUpOverlay } from "./LevelUpOverlay";
 
 interface CarnetContextValue {
   carnet: CarnetView;
@@ -21,6 +22,7 @@ const CarnetContext = createContext<CarnetContextValue | null>(null);
 const ENDPOINT = "/api/carnet";
 const TAB_KEY = `${STORAGE_KEY}:onglet`;
 const REFRESH_AFTER = 60_000;
+const SILENT_ACTIONS = new Set(["import", "reset"]);
 
 async function request<T>(init?: RequestInit): Promise<T> {
   let res: Response;
@@ -58,12 +60,17 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
   // Les actions partent une par une, dans l'ordre des clics.
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const loadedAt = useRef(0);
+  // Dernier niveau connu : une action qui le fait monter déclenche l'animation.
+  const level = useRef<number | null>(null);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const endLevelUp = useCallback(() => setLevelUp(null), []);
 
   const load = useCallback(
     () =>
       request<CarnetView>().then(
         (view) => {
           loadedAt.current = Date.now();
+          level.current = view.progress.level;
           setCarnet(view);
           setLoadError(null);
         },
@@ -78,6 +85,7 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
       (view) => {
         if (cancelled) return;
         loadedAt.current = Date.now();
+        level.current = view.progress.level;
         setCarnet(view);
       },
       (e: Error) => !cancelled && setLoadError(e.message),
@@ -86,6 +94,13 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  // En dev seulement : `?levelup` dans l'URL rejoue l'animation de montée de niveau, sans toucher à l'XP.
+  const hasCarnet = carnet !== null;
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !hasCarnet) return;
+    if (new URLSearchParams(window.location.search).has("levelup")) setLevelUp((level.current ?? 1) + 1);
+  }, [hasCarnet]);
 
   // Retour sur l'onglet ou nouveau jour : on relit le carnet (quêtes du jour, autre appareil).
   useEffect(() => {
@@ -112,6 +127,10 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({ action, args }),
         });
         loadedAt.current = Date.now();
+        const before = level.current;
+        level.current = res.carnet.progress.level;
+        // Import et remise à zéro changent le niveau sans qu'il y ait de vraie montée.
+        if (before !== null && level.current > before && !SILENT_ACTIONS.has(action)) setLevelUp(level.current);
         setCarnet(res.carnet);
         setError(null);
         return res.result;
@@ -154,6 +173,7 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
   return (
     <CarnetContext.Provider value={{ carnet, act, busy: pending > 0, error, activeTab, setActiveTab }}>
       {children}
+      {levelUp !== null && <LevelUpOverlay key={levelUp} level={levelUp} onDone={endLevelUp} />}
     </CarnetContext.Provider>
   );
 }
