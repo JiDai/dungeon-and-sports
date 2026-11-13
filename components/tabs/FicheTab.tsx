@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCarnet, useSavedText } from "../CarnetProvider";
 import { TwoStepButton } from "../TwoStepButton";
 import { CATEGORY_LABELS, CATEGORY_ORDER, STORAGE_KEY } from "@/lib/data";
+import { Button } from "../Button";
 
 /** Copie complète de l'ancien carnet, laissée dans le navigateur par la version d'avant Supabase. */
 function readBrowserCopy(): { text: string; savedAt: number } | null {
@@ -182,11 +183,9 @@ export function FicheTab() {
           />
         </div>
         <div className="btn-row">
-          <button type="button" className="roll-btn inline" onClick={exportData}>
-            Exporter
-          </button>
+          <Button onClick={exportData}>Exporter</Button>
           <TwoStepButton
-            className="roll-btn inline alt"
+            variant="secondary"
             armedLabel="Confirmer le remplacement ?"
             onConfirm={() => void importText(backupText)}
           >
@@ -206,11 +205,11 @@ export function FicheTab() {
             l&apos;oublier. Sinon, importe-la ici (seules ses 40 dernières lignes de chronique seront datées).
           </p>
           <div className="btn-row">
-            <TwoStepButton className="roll-btn inline" armedLabel="Remplacer le carnet ?" onConfirm={() => void importBrowserCopy()}>
+            <TwoStepButton armedLabel="Remplacer le carnet ?" onConfirm={() => void importBrowserCopy()}>
               Importer cette copie
             </TwoStepButton>
             <TwoStepButton
-              className="roll-btn inline alt"
+              variant="secondary"
               armedLabel="Oublier la copie ?"
               onConfirm={() => {
                 forgetBrowserCopy();
@@ -224,13 +223,13 @@ export function FicheTab() {
       )}
 
       <form method="post" action="/auth/signout" className="btn-row">
-        <button type="submit" className="roll-btn inline alt">
+        <Button type="submit" variant="secondary">
           Se déconnecter
-        </button>
+        </Button>
       </form>
 
       <TwoStepButton
-        className="reset-link"
+        variant="link"
         armedLabel="Clique encore pour tout remettre à zéro"
         onConfirm={() => void act("reset").catch(() => {})}
       >

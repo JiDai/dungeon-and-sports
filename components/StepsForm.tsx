@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCarnet } from "./CarnetProvider";
 import { isDone } from "@/lib/carnet";
+import { Button } from "./Button";
 
 /** Saisie du nombre de pas, pour aujourd'hui ou en rattrapage de la veille. */
 export function StepsForm({ yesterday = false }: { yesterday?: boolean }) {
@@ -56,9 +57,9 @@ export function StepsForm({ yesterday = false }: { yesterday?: boolean }) {
             onChange={(e) => setValue(e.target.value)}
           />
         </div>
-        <button type="button" className="roll-btn compact" disabled={done || busy} onClick={submit}>
+        <Button disabled={done || busy} onClick={submit}>
           {done ? "Déjà validé" : "Valider"}
-        </button>
+        </Button>
       </div>
       <div className="feedback">{feedback || (done ? doneMessage : "")}</div>
     </>
