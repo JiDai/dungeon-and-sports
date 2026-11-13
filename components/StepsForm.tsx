@@ -44,7 +44,7 @@ export function StepsForm({ yesterday = false }: { yesterday?: boolean }) {
 
   return (
     <>
-      <div className={`identity cols-2-1${yesterday ? " mt" : ""}`}>
+      <div className={`identity cols-2-1`}>
         <div className="field">
           <label htmlFor={inputId}>{yesterday ? "Pas comptés hier" : "Pas comptés aujourd'hui"}</label>
           <input
