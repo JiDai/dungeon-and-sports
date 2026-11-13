@@ -147,7 +147,7 @@ h1{
 /* ---------- Skill / competence list ---------- */
 .skill-block{margin-bottom:18px;}
 .skill-block:last-child{margin-bottom:0;}
-.skill-items{list-style:none;}
+.skill-items{list-style:none; margin-bottom: 1rem}
 .skill-items li{
   padding:9px 0; border-bottom:1px solid var(--panel-border);
   font-size:14px; display:flex; justify-content:space-between; gap:10px;
@@ -166,7 +166,7 @@ h1{
 .quest .qdetail{font-size:13px; color:var(--text-soft); margin-bottom:12px;}
 .quest .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
 .quest .xp-tag{font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px; color:var(--honey-dark);}
-.quest .bonus-tag{
+.bonus-tag{
   display:inline-block; margin:0 2px; padding:2px 9px; border-radius:999px;
   background:var(--honey); color:#fff; font-weight:700;
   box-shadow:0 2px 8px rgba(219,165,61,0.35);
@@ -266,12 +266,42 @@ h1{
 .reward-card.legendaire .rname{font-size:18px;}
 .reward-card .rdesc{font-family:var(--font-caveat), cursive; font-size:17px; color:var(--text);}
 
+/* Trois colonnes : texte | XP | date. La date a une largeur fixe, calée à droite, pour s'aligner d'une ligne à l'autre. */
 .log-entry{
-  display:flex; justify-content:space-between; padding:8px 0;
-  border-bottom:1px solid var(--panel-border); font-size:13px; gap:10px;
+  display:grid; grid-template-columns:1fr auto 3.2em; align-items:baseline; gap:10px;
+  padding:8px 0; border-bottom:1px solid var(--panel-border); font-size:13px;
 }
 .log-entry:last-child{border-bottom:none;}
-.log-entry .ldate{color:var(--text-soft); font-size:11px; white-space:nowrap;}
+.log-entry .lxp{color:var(--text-soft); font-size:11px; white-space:nowrap; text-align:right;}
+.log-entry .ldate{color:var(--text-soft); font-size:11px; white-space:nowrap; text-align:right; font-variant-numeric:tabular-nums;}
+.log-entry .bonus-tag{margin:0 6px 0 0; padding:1px 8px; font-size:10px;}
+@media (max-width:480px){
+  .log-entry .lxp{display:flex; flex-direction:column-reverse; align-items:flex-end; gap:4px;}
+  .log-entry .bonus-tag{margin:0;}
+  .log-entry .bonus-words{display:none;}
+}
+.log-title{font-weight:700; color:var(--text);}
+.log-rest{color:var(--text-soft);}
+.log-tag{
+  display:inline-block; margin-right:6px; padding:1px 8px; border-radius:999px; vertical-align:1px;
+  font-weight:700; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; color:#fff;
+}
+.log-tag.steps{background:var(--rare);}
+.log-tag.exercise{background:var(--ultra);}
+.log-tag.reward{background:var(--honey);}
+.log-tag.level-up{background:var(--sage);}
+.log-tag.late{background:var(--rose);}
+
+/* Filtre de la chronique : des pastilles à bascule, dans l'esprit des onglets. */
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; border:none; min-width:0;}
+.chip{
+  background:var(--input-bg); border:1px solid var(--panel-border); border-radius:999px;
+  color:var(--text-soft); font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px;
+  line-height:16px; padding:5px 12px; cursor:pointer; transition:all 0.2s;
+}
+.chip:hover{border-color:var(--sage);}
+.chip[aria-pressed="true"]{background:var(--sage); border-color:var(--sage); color:#fff;}
+.chip-count{opacity:0.7; font-weight:500; margin-left:2px;}
 .empty-log{color:var(--text-soft); font-style:italic; font-size:14px;}
 
 .weight-entry{
