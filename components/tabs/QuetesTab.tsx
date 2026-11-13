@@ -2,7 +2,6 @@
 
 import { useCarnet } from "../CarnetProvider";
 import { ExercisePicker } from "../ExercisePicker";
-import { StepsForm } from "../StepsForm";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/data";
 import { activeQuest, isDone } from "@/lib/carnet";
 
@@ -40,18 +39,9 @@ export function QuetesTab() {
       </div>
 
       <div className="panel">
-        <h2>Entraînement Libre</h2>
+        <h2>Les Sentiers de Traverse</h2>
         <p className="hint">N&apos;importe quelle compétence, autant de fois que tu veux dans la journée.</p>
         <ExercisePicker />
-      </div>
-
-      <div className="panel">
-        <h2>Rattrapage de la Veille</h2>
-        <p className="hint">
-          Un oubli d&apos;hier ? Choisis ce que tu as réellement fait — valable uniquement pour la journée précédente.
-        </p>
-        <ExercisePicker yesterday />
-        <StepsForm yesterday />
       </div>
     </>
   );
