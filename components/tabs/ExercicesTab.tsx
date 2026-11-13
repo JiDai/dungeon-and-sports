@@ -6,6 +6,7 @@ import { TwoStepButton } from "../TwoStepButton";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/data";
 import { poolFor } from "@/lib/carnet";
 import type { Category } from "@/lib/types";
+import { Button } from "../Button";
 
 export function ExercicesTab() {
   const { carnet, act, busy } = useCarnet();
@@ -125,14 +126,14 @@ export function ExercicesTab() {
             <input id="exXp" type="number" min={1} max={50} value={xpInput} onChange={(e) => setXpInput(e.target.value)} />
           </div>
         </div>
-        <button type="button" className="roll-btn mt" disabled={busy} onClick={handleAdd}>
+        <Button center className="mt-16" disabled={busy} onClick={handleAdd}>
           Ajouter
-        </button>
+        </Button>
         <div className="feedback">{feedback}</div>
       </div>
 
       <TwoStepButton
-        className="reset-link"
+        variant="link"
         armedLabel="Clique encore pour rétablir les exercices de départ"
         onConfirm={() => {
           act("restoreDefaultExercises").then(

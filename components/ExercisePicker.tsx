@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCarnet } from "./CarnetProvider";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/data";
 import { isDone, poolFor } from "@/lib/carnet";
+import { Button } from "./Button";
 
 /** Validation d'une compétence au choix, pour aujourd'hui ou en rattrapage de la veille. */
 export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
@@ -60,9 +61,9 @@ export function ExercisePicker({ yesterday = false }: { yesterday?: boolean }) {
             ))}
           </select>
         </div>
-        <button type="button" className="roll-btn compact" disabled={!selected || busy} onClick={submit}>
+        <Button disabled={!selected || busy} onClick={submit}>
           {yesterday ? "J'ai fait ça hier" : "Valider"}
-        </button>
+        </Button>
       </div>
       <div className="feedback">{feedback}</div>
       {doneList.length > 0 && (

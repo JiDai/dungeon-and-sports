@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { STORAGE_KEY, TABS } from "@/lib/data";
 import type { CarnetView, TabId } from "@/lib/types";
 import { LevelUpOverlay } from "./LevelUpOverlay";
+import { Button } from "./Button";
 
 interface CarnetContextValue {
   carnet: CarnetView;
@@ -159,9 +160,9 @@ export function CarnetProvider({ children }: { children: ReactNode }) {
         {loadError ? (
           <>
             <p className="empty-log">⚠ {loadError}</p>
-            <button type="button" className="roll-btn mt" onClick={() => void load()}>
+            <Button center className="mt-16" onClick={() => void load()}>
               Réessayer
-            </button>
+            </Button>
           </>
         ) : (
           <p className="empty-log">Le carnet s&apos;ouvre...</p>

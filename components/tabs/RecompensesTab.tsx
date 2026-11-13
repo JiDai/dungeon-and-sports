@@ -7,6 +7,7 @@ import { TierSymbol } from "../TierSymbol";
 import { emptyWishlistText, joinList, parseList, tierOf } from "@/lib/carnet";
 import { REWARD_TIERS } from "@/lib/data";
 import type { DrawnReward, RewardTierId } from "@/lib/types";
+import { Button } from "../Button";
 
 const WISHLISTS: { tier: RewardTierId; label: string; rows: number; placeholder: string }[] = [
   {
@@ -103,9 +104,9 @@ function Cagnotte() {
           <label htmlFor="cagnotteAmount">Valeur</label>
           <input id="cagnotteAmount" type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
-        <button type="button" className="roll-btn compact" disabled={busy} onClick={handleAdd}>
+        <Button disabled={busy} onClick={handleAdd}>
           Ajouter
-        </button>
+        </Button>
       </div>
       <div className="mb-16">
         {carnet.cagnotte.entries.length === 0 ? (
@@ -131,9 +132,9 @@ function Cagnotte() {
           onChange={(e) => setCashLabel(e.target.value)}
         />
       </div>
-      <button type="button" className="roll-btn mt-sm" disabled={busy || carnet.cagnotte.total <= 0} onClick={handleCashOut}>
+      <Button center className="mt-12" disabled={busy || carnet.cagnotte.total <= 0} onClick={handleCashOut}>
         Encaisser la cagnotte
-      </button>
+      </Button>
     </div>
   );
 }
@@ -215,9 +216,9 @@ export function RecompensesTab() {
         <h2>Sanctuaire de la Récompense</h2>
         <div className="dice-zone">
           <div className={`d6${rolling ? " rolling" : tierClass}`}>{diceFace}</div>
-          <button type="button" className="roll-btn" disabled={rolling || busy || pending <= 0} onClick={() => roll(false)}>
+          <Button center disabled={rolling || busy || pending <= 0} onClick={() => roll(false)}>
             {pending > 0 ? `Lancer le dé (${pending} en attente)` : "Lancer le dé"}
-          </button>
+          </Button>
           {result && resultTier && (
             <div className={`reward-card${tierClass}`} key={rolls}>
               <div className={`tier-badge ${resultTier.tier}`}>{resultTier.label}</div>
@@ -226,9 +227,9 @@ export function RecompensesTab() {
             </div>
           )}
           {carnet.rerollAvailable && (
-            <button type="button" className="reroll-btn" disabled={rolling || busy} onClick={() => roll(true)}>
+            <Button variant="outline" center className="mt-14" disabled={rolling || busy} onClick={() => roll(true)}>
               Retirer la dernière récompense
-            </button>
+            </Button>
           )}
         </div>
 

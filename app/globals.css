@@ -172,13 +172,34 @@ h1{
   box-shadow:0 2px 8px rgba(219,165,61,0.35);
 }
 .quest.done .bonus-tag{box-shadow:none;}
-.quest button{
-  background:var(--sage); border:1px solid var(--sage); color:#fff;
-  font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px;
-  padding:8px 14px; border-radius:999px; cursor:pointer; transition:all 0.2s;
+
+/* ---------- Bouton unique (components/Button.tsx) ----------
+   La hauteur n'est pas fixée : elle découle de la ligne de texte, du padding et de la bordure,
+   soit 20 + 2 × 9 + 2 × 1 = 40px. Changer une de ces valeurs change la hauteur de tous les boutons. */
+.btn{
+  --btn-line:20px; --btn-pad-y:9px; --btn-pad-x:22px; --btn-border:1px;
+  --btn-bg:var(--rose); --btn-bg-hover:var(--rose-dark); --btn-fg:#fff;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:var(--btn-pad-y) var(--btn-pad-x);
+  border:var(--btn-border) solid var(--btn-bg); border-radius:999px;
+  background:var(--btn-bg); color:var(--btn-fg);
+  font-family:var(--font-quicksand), sans-serif; font-weight:700; font-size:14px;
+  line-height:var(--btn-line); letter-spacing:0.02em; text-align:center; white-space:nowrap;
+  cursor:pointer; transition:background 0.2s, border-color 0.2s, color 0.2s;
 }
-.quest button:hover{background:var(--sage-dark);}
-.quest button:disabled{opacity:0.35; cursor:default;}
+.btn:hover:not(:disabled){background:var(--btn-bg-hover); border-color:var(--btn-bg-hover);}
+.btn:focus-visible{outline:2px solid var(--honey); outline-offset:2px;}
+.btn:disabled{opacity:0.35; cursor:default;}
+.btn-secondary{--btn-bg:var(--sage); --btn-bg-hover:var(--sage-dark);}
+.btn-outline{--btn-bg:transparent; --btn-bg-hover:var(--sage); --btn-fg:var(--sage-dark); border-color:var(--sage);}
+.btn-outline:hover:not(:disabled){--btn-fg:#fff;}
+.btn-center{display:flex; width:fit-content; margin-inline:auto;}
+/* Lien texte discret (réinitialisations) : hors gabarit des 40px. */
+.btn-link{
+  display:block; width:100%; margin-top:10px; padding:0; border:none; background:none;
+  color:var(--text-soft); font-weight:400; font-size:12px; letter-spacing:0; opacity:0.7;
+}
+.btn-link:hover:not(:disabled){background:none; opacity:1;}
 
 .dice-zone{text-align:center; padding:8px 0;}
 .d6{
@@ -196,21 +217,6 @@ h1{
   0%,100%{transform:rotate(0deg);} 20%{transform:rotate(-12deg);}
   40%{transform:rotate(9deg);} 60%{transform:rotate(-7deg);} 80%{transform:rotate(5deg);}
 }
-.roll-btn{
-  display:block; margin:0 auto; background:var(--rose);
-  border:1px solid var(--rose); color:#fff;
-  font-family:var(--font-quicksand), sans-serif; font-weight:700; letter-spacing:0.02em;
-  font-size:14px; padding:12px 28px; border-radius:999px; cursor:pointer;
-}
-.roll-btn:hover{background:var(--rose-dark);}
-.roll-btn:disabled{opacity:0.35; cursor:default;}
-.reroll-btn{
-  display:block; margin:14px auto 0; background:transparent;
-  border:1px solid var(--sage); color:var(--sage-dark);
-  font-family:var(--font-quicksand), sans-serif; font-weight:600; font-size:12px;
-  padding:9px 18px; border-radius:999px; cursor:pointer;
-}
-.reroll-btn:hover{background:var(--sage); color:#fff;}
 
 /* Code couleur des rangs : commun vert, rare bleu, ultra-rare violet, légendaire orange.
    Chaque élément marqué d'un rang reçoit --tier-color (vif) et --tier-dark (texte). */
@@ -281,12 +287,6 @@ h1{
 }
 .weight-entry .wdel:hover{opacity:1;}
 
-.reset-link{
-  display:block; text-align:center; margin-top:10px;
-  color:var(--text-soft); font-size:12px; cursor:pointer; opacity:0.7;
-}
-.reset-link:hover{opacity:1;}
-
 .disclaimer{font-size:12px; color:var(--text-soft); text-align:center; margin-top:6px; line-height:1.5; padding:0 8px;}
 .help-list{list-style:none; font-size:14px; line-height:1.6;}
 .help-list li{margin-bottom:10px;}
@@ -311,13 +311,9 @@ h1{
 .field.mb{margin-bottom:12px;}
 .field.mt{margin-top:14px;}
 .field.mt-lg{margin-top:20px;}
-.roll-btn.inline{margin:0;}
-.roll-btn.compact{padding:11px 0;}
-.roll-btn.mt{margin-top:16px;}
-.roll-btn.mt-sm{margin-top:12px;}
-.roll-btn.alt{background:var(--sage); border-color:var(--sage);}
 .btn-row{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;}
-.reset-link{background:none; border:none; width:100%; font-family:inherit;}
+.mt-12{margin-top:12px;}
+.mt-16{margin-top:16px;}
 .weight-chart{width:100%; height:auto;}
 .mt-18{margin-top:18px;}
 .mt-14{margin-top:14px;}

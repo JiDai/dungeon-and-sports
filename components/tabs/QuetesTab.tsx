@@ -4,6 +4,7 @@ import { useCarnet } from "../CarnetProvider";
 import { ExercisePicker } from "../ExercisePicker";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/data";
 import { activeQuest, isDone } from "@/lib/carnet";
+import { Button } from "../Button";
 
 export function QuetesTab() {
   const { carnet, act, busy } = useCarnet();
@@ -29,9 +30,9 @@ export function QuetesTab() {
                   +{quest.xp} XP <span className="bonus-tag">✦ +{carnet.questBonus} XP bonus</span> ·{" "}
                   {CATEGORY_LABELS[cat]}
                 </span>
-                <button type="button" disabled={done || busy} onClick={() => run("completeQuest", { category: cat })}>
+                <Button variant="secondary" disabled={done || busy} onClick={() => run("completeQuest", { category: cat })}>
                   {done ? "Faite" : "Valider"}
-                </button>
+                </Button>
               </div>
             </div>
           );

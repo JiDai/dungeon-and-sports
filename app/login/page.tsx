@@ -1,3 +1,5 @@
+import { Button } from "@/components/Button";
+
 const MESSAGES: Record<string, string> = {
   email: "Cette adresse e-mail n'est pas valide.",
   envoi: "L'e-mail n'a pas pu partir. Réessaie dans un instant.",
@@ -25,9 +27,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <label htmlFor="email">Adresse e-mail</label>
               <input id="email" name="email" type="email" autoComplete="email" required maxLength={254} />
             </div>
-            <button type="submit" className="roll-btn">
+            <Button type="submit" center>
               Recevoir un lien de connexion
-            </button>
+            </Button>
           </form>
         )}
         {error && MESSAGES[error] && <div className="feedback">⚠ {MESSAGES[error]}</div>}

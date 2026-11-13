@@ -5,6 +5,7 @@ import { useCarnet } from "../CarnetProvider";
 import { StepsForm } from "../StepsForm";
 import { formatDateFR } from "@/lib/carnet";
 import type { CarnetView } from "@/lib/types";
+import { Button } from "../Button";
 
 type WeightEntry = CarnetView["weights"][number];
 
@@ -91,9 +92,9 @@ export function SuiviTab() {
               onChange={(e) => setWeight(e.target.value)}
             />
           </div>
-          <button type="button" className="roll-btn compact" disabled={busy} onClick={handleAdd}>
+          <Button disabled={busy} onClick={handleAdd}>
             Enregistrer
-          </button>
+          </Button>
         </div>
         <div className="feedback">{feedback}</div>
         <div className="mt-18">

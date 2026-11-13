@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Button, type ButtonVariant } from "./Button";
 
 interface Props {
+  variant?: ButtonVariant;
   className?: string;
   armedLabel: string;
   onConfirm: () => void;
@@ -10,7 +12,7 @@ interface Props {
 }
 
 /** Confirmation en deux clics (sans fenêtre pop-up) : 1er clic = armé, 2e clic = action. */
-export function TwoStepButton({ className, armedLabel, onConfirm, children }: Props) {
+export function TwoStepButton({ variant, className, armedLabel, onConfirm, children }: Props) {
   const [armed, setArmed] = useState(false);
   const timer = useRef<number | undefined>(undefined);
 
@@ -28,8 +30,8 @@ export function TwoStepButton({ className, armedLabel, onConfirm, children }: Pr
   };
 
   return (
-    <button type="button" className={className} onClick={handleClick}>
+    <Button variant={variant} className={className} onClick={handleClick}>
       {armed ? armedLabel : children}
-    </button>
+    </Button>
   );
 }
