@@ -9,30 +9,20 @@ import { REWARD_TIERS } from "@/lib/data";
 import type { DrawnReward, RewardTierId } from "@/lib/types";
 import { Button } from "../Button";
 
-const WISHLISTS: { tier: RewardTierId; label: string; rows: number; placeholder: string }[] = [
-  {
-    tier: "commun",
-    label: "Liste Commune / Peu Commune (séparés par ;)",
-    rows: 3,
-    placeholder: "ex. Un petit bijou fantaisie ; Un jeu d'occasion ; Un snack plaisir",
-  },
-  { tier: "rare", label: "Liste Rare (séparés par ;)", rows: 2, placeholder: "ex. Un accessoire un peu plus cher ; Un jeu en promo" },
-  {
-    tier: "ultrarare",
-    label: "Liste Ultra-rare (séparés par ;)",
-    rows: 2,
-    placeholder: "ex. La pièce que tu convoites depuis des mois ; Un DLC complet",
-  },
+const WISHLISTS: { tier: RewardTierId; rows: number; placeholder: string }[] = [
+  { tier: "commun", rows: 3, placeholder: "ex. Un petit bijou fantaisie ; Un jeu d'occasion ; Un snack plaisir" },
+  { tier: "rare", rows: 2, placeholder: "ex. Un accessoire un peu plus cher ; Un jeu en promo" },
+  { tier: "ultrarare", rows: 2, placeholder: "ex. La pièce que tu convoites depuis des mois ; Un DLC complet" },
   {
     tier: "legendaire",
-    label: "Liste Légendaire (séparés par ;)",
     rows: 2,
     placeholder: "ex. Une sortie exceptionnelle ; Le gros achat que tu remets toujours à plus tard",
   },
 ];
 
-function WishlistField({ tier, label, rows, placeholder, className }: (typeof WISHLISTS)[number] & { className: string }) {
+function WishlistField({ tier, rows, placeholder, className }: (typeof WISHLISTS)[number] & { className: string }) {
   const { carnet, act } = useCarnet();
+  const { list, butin } = tierOf(tier);
   const field = useSavedText(joinList(carnet.wishlists[tier]), (value) =>
     act("setWishlist", { tier, items: parseList(value) }),
   );
@@ -40,7 +30,7 @@ function WishlistField({ tier, label, rows, placeholder, className }: (typeof WI
     <div className={`field ${className}`}>
       <label htmlFor={`wishlist-${tier}`} className="wishlist-label">
         <TierSymbol tier={tier} />
-        {label}
+        Liste des {list} ({butin})
       </label>
       <textarea
         id={`wishlist-${tier}`}
@@ -95,7 +85,7 @@ function Cagnotte() {
           <input
             id="cagnotteLabel"
             type="text"
-            placeholder="ex. Butin Commun non utilisé"
+            placeholder="ex. Petite trouvaille non utilisée"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
           />
@@ -233,8 +223,11 @@ export function RecompensesTab() {
           )}
         </div>
 
+        <p className="hint wishlist-hint">
+          Une liste par rang de butin, éléments séparés par « ; ».
+        </p>
         {WISHLISTS.map((w, i) => (
-          <WishlistField key={w.tier} {...w} className={i === 0 ? "mt-lg" : "mt"} />
+          <WishlistField key={w.tier} {...w} className={i === 0 ? "" : "mt"} />
         ))}
       </div>
 

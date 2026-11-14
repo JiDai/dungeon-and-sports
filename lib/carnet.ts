@@ -62,6 +62,8 @@ export interface ChronicleLine {
   xp: number | null;
   /** Bonus de quête du jour, déjà compris dans `xp`. */
   bonus: number | null;
+  /** Rang d'un tirage, rappelé par son symbole. */
+  tier?: RewardTierId;
 }
 
 /** Premier jour où une quête du jour rapporte un bonus (migration du 02/11, appliquée le soir même). */
@@ -89,10 +91,8 @@ export function chronicleLine(e: ChronicleEntry, questBonus: number): ChronicleL
     case "level_up":
       return line(`Niveau ${e.level}`, "", ["Levelup"]);
     case "reward": {
-      const tier = tierOf(e.tier!);
-      const star = tier.tier !== "commun" ? "★ " : "";
-      const rest = [e.is_reroll ? "retirage" : "", tier.label, e.detail ?? ""].filter(Boolean).join(" — ");
-      return line(`${star}${e.name}`, rest, ["Tirage"]);
+      const rest = [e.is_reroll ? "retirage" : "", e.detail ?? ""].filter(Boolean).join(" — ");
+      return { ...line(e.name ?? "", rest, ["Tirage"]), tier: e.tier ?? undefined };
     }
     case "cagnotte_add":
       return line(`🪙 Cagnotte +${e.amount}`, e.name ?? "");
@@ -104,4 +104,4 @@ export function chronicleLine(e: ChronicleEntry, questBonus: number): ChronicleL
 }
 
 export const emptyWishlistText = (tier: RewardTier) =>
-  `Ta liste ${tier.label} est encore vide — ajoutes-y quelque chose pour la prochaine fois. En attendant, offre-toi un plaisir libre.`;
+  `Ta liste des ${tier.list} est encore vide — ajoutes-y quelque chose pour la prochaine fois. En attendant, offre-toi un plaisir libre.`;

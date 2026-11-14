@@ -15,10 +15,10 @@ export const CATEGORY_ORDER: Category[] = ["endurance", "force", "volonte", "sou
 
 // Règles du jeu (XP, paliers, tirages) : dans la base, voir supabase/migrations/.
 export const REWARD_TIERS: RewardTier[] = [
-  { tier: "commun", label: "Commun / Peu Commun", symbol: "◆" },
-  { tier: "rare", label: "Rare", symbol: "✦" },
-  { tier: "ultrarare", label: "Ultra-rare", symbol: "★" },
-  { tier: "legendaire", label: "Légendaire", symbol: "✵" },
+  { tier: "commun", label: "Commun / Peu Commun", symbol: "◆", name: "Petite Trouvaille", list: "petites trouvailles", butin: "Butin commun" },
+  { tier: "rare", label: "Rare", symbol: "✦", name: "Trouvaille Précieuse", list: "trouvailles précieuses", butin: "Butin rare" },
+  { tier: "ultrarare", label: "Ultra-rare", symbol: "★", name: "Relique Oubliée", list: "reliques oubliées", butin: "Butin ultra-rare" },
+  { tier: "legendaire", label: "Légendaire", symbol: "✵", name: "Don des Anciens", list: "dons des Anciens", butin: "Butin légendaire" },
 ];
 
 export const TABS: { id: TabId; label: string }[] = [
