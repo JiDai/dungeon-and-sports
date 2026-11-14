@@ -18,7 +18,7 @@ pnpm db:migrate # applique les migrations SQL en attente (DATABASE_URL)
 - `components/CarnetProvider.tsx` — état affiché (celui du serveur), envoi des actions dans l'ordre
 - `components/tabs/` — un composant par onglet
 - `lib/db.ts` — accès Supabase avec la session de l'utilisateur : liste fermée d'actions, validation des arguments
-- `lib/supabase.ts`, `proxy.ts`, `app/login/`, `app/auth/` — connexion Supabase Auth (lien magique)
+- `lib/supabase.ts`, `lib/auth.ts`, `proxy.ts`, `app/login/`, `app/auth/` — connexion Supabase Auth (mot de passe, lien magique)
 - `scripts/link-player.mts` — crée un compte et y rattache le carnet
 - `scripts/migrate.mts` — applique les migrations SQL en attente (`pnpm db:migrate`)
 - `lib/legacy.ts` — conversion des sauvegardes de l'ancien carnet (état JSON complet) vers le nouveau modèle
@@ -41,10 +41,15 @@ calculé dans le fuseau du joueur.
 
 ## Connexion
 
-Supabase Auth, par lien magique envoyé par e-mail. Le serveur appelle la base avec la session de
-l'utilisateur (clé publishable, rôle `authenticated`) : chaque fonction vérifie que le joueur demandé est
-celui du compte, et la RLS limite les lectures à ses propres lignes. La clé secrète ne sert qu'aux scripts.
-Seuls les comptes existants reçoivent un lien : on les crée avec `pnpm link-player <e-mail>`.
+Supabase Auth, par e-mail et mot de passe (`/login`). Le lien magique reste possible en secondaire
+(`/login/lien`). Le serveur appelle la base avec la session de l'utilisateur (clé publishable, rôle
+`authenticated`) : chaque fonction vérifie que le joueur demandé est celui du compte, et la RLS limite les
+lectures à ses propres lignes. La clé secrète ne sert qu'aux scripts. Seuls les comptes existants peuvent se
+connecter : on les crée avec `pnpm link-player <e-mail>`.
+
+Un compte créé par le script n'a pas de mot de passe : « Mot de passe oublié ? » (`/login/oubli`) envoie un
+lien qui ouvre la session puis mène à `/login/nouveau`, où l'on choisit le mot de passe (8 caractères au
+moins). Le même chemin sert à le changer.
 
 « Exporter » (onglet Fiche) donne tout le carnet en JSON (format 2) ; « Importer » accepte ce format et
 les exports de l'ancienne version.
@@ -64,16 +69,22 @@ les exports de l'ancienne version.
    état. Si le carnet Supabase contient déjà de la progression, il faut `--force` pour le remplacer.
 5. Rattache le carnet à ton compte : `pnpm link-player ton@adresse` (crée le compte au besoin).
 6. Authentication → URL Configuration : « Site URL » = l'adresse de production, et dans « Redirect URLs »
-   `https://<ton-domaine>/auth/confirm` ainsi que `http://carnet.localhost:3000/auth/confirm` pour le dev.
+   `https://<ton-domaine>/auth/**` ainsi que `http://localhost:3000/auth/**` pour le dev (le lien
+   « mot de passe oublié » revient sur `/auth/confirm?next=/login/nouveau`, que l'adresse exacte sans `**`
+   ne couvre pas).
 7. Authentication → Sign In / Providers : désactive « Allow new users to sign up » (personne d'autre ne
    peut alors créer de compte).
+   Laisse le fournisseur « Email » activé : il couvre le mot de passe et le lien magique.
+8. Modèle d'e-mail « Reset Password » : celui par défaut (`{{ .ConfirmationURL }}`) convient. S'il est
+   personnalisé avec `token_hash`, pointe-le vers
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`.
 
 ### Vercel
 
 Variables d'environnement : `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY`. Ne mets pas la clé secrète.
 
-En dev, le serveur écoute sur le port 3000. Utilise `http://carnet.localhost:3000` (l'adresse
-déclarée dans les Redirect URLs) : le lien de connexion doit s'ouvrir sur la même adresse que la demande.
+En dev, le serveur écoute sur le port 3000. Utilise `http://localhost:3000` (l'adresse déclarée dans les
+Redirect URLs) : les liens envoyés par e-mail doivent s'ouvrir sur la même adresse que la demande.
 
 Pour récupérer la progression de la version HTML : onglet Fiche → « Exporter » dans l'ancienne version,
 puis « Importer » ici.

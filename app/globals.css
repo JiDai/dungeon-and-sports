@@ -337,6 +337,10 @@ h1{
 /* ---------- Utilitaires (remplacent les styles inline de la version HTML) ---------- */
 .hint{font-size:13px; color:var(--text-soft); margin-bottom:14px;}
 .feedback{margin-top:12px; font-size:14px; color:var(--text-soft);}
+/* Liens secondaires sous les formulaires de connexion. */
+.auth-links{display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:18px; font-size:13px;}
+.auth-links a{color:var(--text-soft); text-decoration:underline; text-underline-offset:3px;}
+.auth-links a:hover{color:var(--rose-dark);}
 .identity.cols-2-1{grid-template-columns:2fr 1fr; align-items:end;}
 .identity.cols-2-1-1{grid-template-columns:2fr 1fr 1fr; align-items:end; margin-bottom:16px;}
 .identity.cols-3{grid-template-columns:1fr 1fr 1fr; align-items:end;}

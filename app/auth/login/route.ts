@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+import { isValidEmail } from "@/lib/auth";
 import { appUrl, isSameOrigin } from "@/lib/http";
 import { supabaseServer } from "@/lib/supabase";
 
-// Envoie un lien de connexion par e-mail. Seuls les comptes existants le reçoivent (shouldCreateUser: false) :
+// Connexion secondaire (/login/lien) : envoie un lien de connexion par e-mail. Seuls les comptes existants le reçoivent (shouldCreateUser: false) :
 // le compte se crée avec `pnpm link-player <e-mail>`.
 export async function POST(req: Request) {
   if (!isSameOrigin(req)) return new Response(null, { status: 403 });
-  const back = (query: string) => NextResponse.redirect(appUrl(req, `/login?${query}`), 303);
+  const back = (query: string) => NextResponse.redirect(appUrl(req, `/login/lien?${query}`), 303);
 
   const email = String((await req.formData()).get("email") ?? "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return back("error=email");
+  if (!isValidEmail(email)) return back("error=email");
 
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.signInWithOtp({
