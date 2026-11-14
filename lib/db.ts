@@ -119,6 +119,17 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
       p_xp: int(a.xp, 1, 50, "XP"),
     },
   ],
+  updateExercise: (a) => [
+    "update_exercise",
+    {
+      p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice"),
+      p_flavor: text(a.flavor, 80, "nom de quête"),
+      p_name: text(a.name, 120, "exercice"),
+      p_detail: text(a.detail, 300, "détail"),
+      p_xp: int(a.xp, 1, 50, "XP"),
+    },
+  ],
+  resetExercise: (a) => ["reset_exercise", { p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice") }],
   archiveExercise: (a) => ["archive_exercise", { p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice") }],
   restoreDefaultExercises: () => ["restore_default_exercises", {}],
   setWeight: (a) => ["set_weight", { p_day: day(a.day), p_weight_kg: decimal(a.weightKg, 20, 400, "poids") }],

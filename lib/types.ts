@@ -19,6 +19,10 @@ export interface Exercise {
   name: string;
   detail: string;
   xp: number;
+  /** Copie d'un exercice de départ (peut être remis au modèle). */
+  fromDefault: boolean;
+  /** Diffère de son exercice de départ. */
+  modified: boolean;
 }
 
 /** Une ligne de la vue chronicle. */
@@ -86,6 +90,8 @@ export interface CarnetExport {
     position: number;
     archived_at: string | null;
     created_at: string;
+    /** Exercice de départ d'origine (absent des anciens exports). */
+    default_ref?: number | null;
   }[];
   draws: { day: string; category: Category; exercise_ref: number; drawn_at: string }[];
   activities: {

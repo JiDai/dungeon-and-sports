@@ -153,6 +153,8 @@ h1{
   font-size:14px; display:flex; justify-content:space-between; gap:10px;
 }
 .skill-items li:last-child{border-bottom:none;}
+.skill-items li.ex-editing{display:block; padding:14px 0;}
+.ex-editor .btn-row{margin-top:14px;}
 .skill-items .sxp{font-size:12px; color:var(--text-soft); white-space:nowrap;}
 
 /* ---------- Quest cards ---------- */
