@@ -231,6 +231,7 @@ h1{
 
 .tier-symbol{fill:var(--tier-color);}
 .field .wishlist-label{display:flex; align-items:center; gap:6px;}
+.wishlist-hint{margin-top:20px;}
 .wishlist-label .tier-symbol{flex:none; width:14px; height:14px;}
 
 .d6.commun, .d6.rare, .d6.ultrarare, .d6.legendaire{
@@ -283,6 +284,7 @@ h1{
   .log-entry .bonus-words{display:none;}
 }
 .log-title{font-weight:700; color:var(--text);}
+.log-tier{width:.85em; height:.85em; margin-right:5px; vertical-align:-.05em;}
 .log-rest{color:var(--text-soft);}
 .log-tag{
   display:inline-block; margin-right:6px; padding:1px 8px; border-radius:999px; vertical-align:1px;

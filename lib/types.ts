@@ -8,6 +8,12 @@ export interface RewardTier {
   tier: RewardTierId;
   label: string;
   symbol: string;
+  /** Nom du butin tiré pour ce rang (copie de reward_tier_def.flavors). */
+  name: string;
+  /** Nom de la liste de souhaits, au pluriel : « petites trouvailles »… */
+  list: string;
+  /** Rappel du rang : « Butin commun »… */
+  butin: string;
 }
 
 /* ---------- Ce que renvoie get_carnet ---------- */
