@@ -325,6 +325,7 @@ h1{
 .help-list{list-style:none; font-size:14px; line-height:1.6;}
 .help-list li{margin-bottom:10px;}
 .help-list li:last-child{margin-bottom:0;}
+.help-list.steps{list-style:decimal; padding-left:20px;}
 .ex-del{background:none; border:none; color:var(--rose-dark); cursor:pointer; font-size:15px; padding:2px 6px; opacity:0.7;}
 .ex-del:hover{opacity:1;}
 .skill-items small{display:block; color:var(--text-soft); font-size:12px; margin-top:2px;}

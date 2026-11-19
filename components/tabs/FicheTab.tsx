@@ -5,6 +5,7 @@ import { useCarnet, useSavedText } from "../CarnetProvider";
 import { TwoStepButton } from "../TwoStepButton";
 import { CATEGORY_LABELS, CATEGORY_ORDER, STORAGE_KEY } from "@/lib/data";
 import { Button } from "../Button";
+import { NotificationsPanel } from "../NotificationsPanel";
 
 /** Copie complète de l'ancien carnet, laissée dans le navigateur par la version d'avant Supabase. */
 function readBrowserCopy(): { text: string; savedAt: number } | null {
@@ -161,6 +162,8 @@ export function FicheTab() {
           </li>
         </ul>
       </div>
+
+      <NotificationsPanel />
 
       <div className="panel">
         <h2>Sauvegarde</h2>
