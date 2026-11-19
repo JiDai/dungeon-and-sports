@@ -245,6 +245,8 @@ h3.wishlist-label{display:flex; align-items:center; gap:6px;}
 .coin{display:inline-block; width:1em; height:1em; flex:none; vertical-align:-.15em;}
 .coin-inline{margin-right:3px;}
 .coin-after{margin-left:2px;}
+.cagnotte-total{font-family:var(--font-playfair), serif; font-weight:700; font-size:24px; color:var(--honey-dark);}
+.cagnotte-total .coin{margin-right:6px;}
 .skill-items li.wish-empty{color:var(--text-soft); font-size:13px;}
 .reward-card .rnext{margin-top:8px; font-size:12px; color:var(--text-soft);}
 .won-rewards li{align-items:center;}

@@ -227,7 +227,7 @@ function Cagnotte() {
       <WonRewards />
       <div className="level-row mt-16">
         <span className="lvl">Cagnotte</span>
-        <span className="xp-num">
+        <span className="cagnotte-total">
           <Coin className="coin-inline" />
           {formatAmount(carnet.cagnotte.total)}
         </span>
