@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCarnet } from "../CarnetProvider";
 import { ExercisePicker } from "../ExercisePicker";
 import { StepsForm } from "../StepsForm";
+import { Coin } from "../Coin";
 import { TierSymbol } from "../TierSymbol";
 import { CHRONICLE_TYPES, chronicleLine, chronicleTypes, type ChronicleType } from "@/lib/carnet";
 
@@ -65,6 +66,7 @@ export function ChroniqueTab() {
                       ))}
                       <strong className="log-title">
                         {l.tier && <TierSymbol tier={l.tier} className="log-tier" />}
+                        {l.coin && <Coin className="log-tier" />}
                         {l.title}
                       </strong>
                       {l.rest && <span className="log-rest"> — {l.rest}</span>}

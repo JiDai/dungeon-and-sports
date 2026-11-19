@@ -35,7 +35,7 @@ export interface Exercise {
 export interface ChronicleEntry {
   at: string;
   day: string | null;
-  kind: "activity" | "level_up" | "reward" | "cagnotte_add" | "cagnotte_cashout" | "legacy";
+  kind: "activity" | "level_up" | "reward" | "reward_taken" | "reward_banked" | "cagnotte_add" | "cagnotte_cashout" | "legacy";
   activity_kind: "quest" | "exercise" | "catch_up" | "steps" | null;
   category: Category | null;
   name: string | null;
@@ -66,10 +66,19 @@ export interface CarnetView {
   /** Exercices déjà validés (quête ou choix libre). */
   doneExercises: { today: number[]; yesterday: number[] };
   rerollAvailable: boolean;
-  wishlists: Record<RewardTierId, string[]>;
+  wishlists: Record<RewardTierId, WishlistItem[]>;
+  /** Tirages gagnés qui attendent une décision : prendre ou cagnotter. */
+  wonRewards: WonReward[];
   cagnotte: { total: number; entries: { id: number; label: string; amount: number; at: string }[] };
   weights: { day: string; weightKg: number }[];
   chronicle: ChronicleEntry[];
+}
+
+export interface WishlistItem {
+  id: number;
+  label: string;
+  /** Montant ajouté à la cagnotte si on la cagnotte ; null : aucun. */
+  amount: number | null;
 }
 
 export interface DrawnReward {
@@ -77,6 +86,16 @@ export interface DrawnReward {
   name: string;
   /** null : la liste de souhaits de ce rang était vide. */
   description: string | null;
+  /** Absent pour un tirage factice (?dice en dev). */
+  id?: number;
+  amount?: number | null;
+}
+
+export interface WonReward extends DrawnReward {
+  id: number;
+  day: string;
+  at: string;
+  amount: number | null;
 }
 
 /* ---------- Export format 2 (export_player / import_player) ---------- */
@@ -120,13 +139,31 @@ export interface CarnetExport {
     tier: RewardTierId;
     name: string;
     description: string | null;
+    wishlist_ref?: number | null;
+    amount?: number | null;
+    /** Absent des exports d'avant la refonte : le tirage est alors tenu pour pris. */
+    outcome?: "taken" | "banked" | null;
+    decided_at?: string | null;
     is_reroll: boolean;
     replaces_ref: number | null;
     created_at: string;
   }[];
-  wishlist: { tier: RewardTierId; label: string; position: number }[];
+  wishlist: {
+    ref?: number;
+    tier: RewardTierId;
+    label: string;
+    amount?: number | null;
+    position: number;
+    archived_at?: string | null;
+  }[];
   cagnotte_cashouts: { ref: number; description: string; total: number; created_at: string }[];
-  cagnotte_entries: { label: string; amount: number; cashout_ref: number | null; created_at: string }[];
+  cagnotte_entries: {
+    label: string;
+    amount: number;
+    cashout_ref: number | null;
+    reward_draw_ref?: number | null;
+    created_at: string;
+  }[];
   weights: { day: string; weight_kg: number; created_at: string }[];
   legacy_log: { date_label: string; text: string; xp: number | null; created_at: string }[];
 }

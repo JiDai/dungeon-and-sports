@@ -87,6 +87,9 @@ function decimal(v: unknown, min: number, max: number, what: string): number {
   if (typeof v !== "number" || !Number.isFinite(v) || v < min || v > max) throw bad(what);
   return Math.round(v * 100) / 100;
 }
+const id = (v: unknown, what: string) => int(v, 1, Number.MAX_SAFE_INTEGER, what);
+/** Montant cagnottable : null (aucun) ou un nombre positif. */
+const optionalAmount = (v: unknown) => (v === null || v === undefined ? null : decimal(v, 0.01, 1e7, "montant"));
 function day(v: unknown): string {
   if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) throw bad("date");
   return v;
@@ -99,10 +102,15 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
     "set_profile",
     { p_name: a.name === undefined ? null : text(a.name, 80, "nom"), p_title: a.title === undefined ? null : text(a.title, 120, "titre") },
   ],
-  setWishlist: (a) => {
-    if (!Array.isArray(a.items) || a.items.length > 200) throw bad("liste");
-    return ["set_wishlist", { p_tier: tier(a.tier), p_items: a.items.map((i) => text(i, 200, "souhait")) }];
-  },
+  addWishlistItem: (a) => [
+    "add_wishlist_item",
+    { p_tier: tier(a.tier), p_label: text(a.label, 200, "récompense"), p_amount: optionalAmount(a.amount) },
+  ],
+  updateWishlistItem: (a) => [
+    "update_wishlist_item",
+    { p_item: id(a.id, "récompense"), p_label: text(a.label, 200, "récompense"), p_amount: optionalAmount(a.amount) },
+  ],
+  archiveWishlistItem: (a) => ["archive_wishlist_item", { p_item: id(a.id, "récompense") }],
   completeQuest: (a) => ["complete_quest", { p_category: category(a.category) }],
   completeExercise: (a) => [
     "complete_exercise",
@@ -134,12 +142,10 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
   restoreDefaultExercises: () => ["restore_default_exercises", {}],
   setWeight: (a) => ["set_weight", { p_day: day(a.day), p_weight_kg: decimal(a.weightKg, 20, 400, "poids") }],
   deleteWeight: (a) => ["delete_weight", { p_day: day(a.day) }],
-  addToCagnotte: (a) => [
-    "add_to_cagnotte",
-    { p_label: text(a.label, 200, "libellé"), p_amount: decimal(a.amount, 0.01, 1e7, "valeur") },
-  ],
   cashOutCagnotte: (a) => ["cash_out_cagnotte", { p_description: text(a.description, 200, "description") }],
   drawReward: (a) => ["draw_reward", { p_reroll: a.reroll === true }],
+  takeReward: (a) => ["take_reward", { p_draw: id(a.id, "récompense") }],
+  bankReward: (a) => ["bank_reward", { p_draw: id(a.id, "récompense") }],
   reset: () => ["reset_player", {}],
 };
 
