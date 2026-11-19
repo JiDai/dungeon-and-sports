@@ -40,6 +40,9 @@ function WishlistItemForm({
   const [amount, setAmount] = useState(item?.amount == null ? "" : String(item.amount));
   const [error, setError] = useState<string | null>(null);
   const idPrefix = item ? `wish-${item.id}` : `wish-new-${tier}`;
+  // Le formulaire s'ouvre sur un clic (Ajouter, ✎) : le curseur va directement au libellé.
+  const labelRef = useRef<HTMLInputElement>(null);
+  useEffect(() => labelRef.current?.focus(), []);
 
   const submit = async () => {
     const value = parseAmount(amount);
@@ -49,11 +52,7 @@ function WishlistItemForm({
       if (item) await act("updateWishlistItem", { id: item.id, label: label.trim(), amount: value });
       else await act("addWishlistItem", { tier, label: label.trim(), amount: value });
       setError(null);
-      if (item) onDone?.();
-      else {
-        setLabel("");
-        setAmount("");
-      }
+      onDone?.();
     } catch (e) {
       setError((e as Error).message);
     }
@@ -73,6 +72,7 @@ function WishlistItemForm({
           <input
             id={`${idPrefix}-label`}
             type="text"
+            ref={labelRef}
             maxLength={200}
             placeholder={PLACEHOLDERS[tier]}
             value={label}
@@ -91,20 +91,12 @@ function WishlistItemForm({
           />
         </div>
         <div className="wish-buttons">
-          {item ? (
-            <>
-              <Button type="submit" className="btn-compact" disabled={busy}>
-                Enregistrer
-              </Button>
-              <Button variant="outline" className="btn-compact" disabled={busy} onClick={onDone}>
-                Annuler
-              </Button>
-            </>
-          ) : (
-            <Button type="submit" className="btn-compact" disabled={busy}>
-              Ajouter
-            </Button>
-          )}
+          <Button type="submit" className="btn-compact" disabled={busy}>
+            {item ? "Enregistrer" : "Ajouter"}
+          </Button>
+          <Button variant="outline" className="btn-compact" disabled={busy} onClick={onDone}>
+            Annuler
+          </Button>
         </div>
       </div>
       {error && <p className="feedback">{error}</p>}
@@ -115,6 +107,7 @@ function WishlistItemForm({
 function Wishlist({ tier }: { tier: RewardTierId }) {
   const { carnet, act, busy } = useCarnet();
   const [editing, setEditing] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
   const { list, butin } = tierOf(tier);
   const items = carnet.wishlists[tier] ?? [];
 
@@ -160,7 +153,13 @@ function Wishlist({ tier }: { tier: RewardTierId }) {
           ),
         )}
       </ul>
-      <WishlistItemForm tier={tier} />
+      {adding ? (
+        <WishlistItemForm tier={tier} onDone={() => setAdding(false)} />
+      ) : (
+        <Button variant="outline" className="btn-compact" disabled={busy} onClick={() => setAdding(true)}>
+          + Ajouter une récompense
+        </Button>
+      )}
     </div>
   );
 }
