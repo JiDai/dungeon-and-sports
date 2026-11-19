@@ -1,65 +1,215 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCarnet, useSavedText } from "../CarnetProvider";
+import { useCarnet } from "../CarnetProvider";
 import { DiceRollOverlay } from "../DiceRollOverlay";
+import { Coin } from "../Coin";
 import { TierSymbol } from "../TierSymbol";
-import { emptyWishlistText, joinList, parseList, tierOf } from "@/lib/carnet";
+import { emptyWishlistText, formatAmount, tierOf } from "@/lib/carnet";
 import { REWARD_TIERS } from "@/lib/data";
-import type { DrawnReward, RewardTierId } from "@/lib/types";
+import type { DrawnReward, RewardTierId, WishlistItem } from "@/lib/types";
 import { Button } from "../Button";
 
-const WISHLISTS: { tier: RewardTierId; rows: number; placeholder: string }[] = [
-  { tier: "commun", rows: 3, placeholder: "ex. Un petit bijou fantaisie ; Un jeu d'occasion ; Un snack plaisir" },
-  { tier: "rare", rows: 2, placeholder: "ex. Un accessoire un peu plus cher ; Un jeu en promo" },
-  { tier: "ultrarare", rows: 2, placeholder: "ex. La pièce que tu convoites depuis des mois ; Un DLC complet" },
-  {
-    tier: "legendaire",
-    rows: 2,
-    placeholder: "ex. Une sortie exceptionnelle ; Le gros achat que tu remets toujours à plus tard",
-  },
-];
+const PLACEHOLDERS: Record<RewardTierId, string> = {
+  commun: "ex. Un snack plaisir",
+  rare: "ex. Un jeu en promo",
+  ultrarare: "ex. Un DLC complet",
+  legendaire: "ex. Le gros achat que tu remets toujours à plus tard",
+};
 
-function WishlistField({ tier, rows, placeholder, className }: (typeof WISHLISTS)[number] & { className: string }) {
-  const { carnet, act } = useCarnet();
-  const { list, butin } = tierOf(tier);
-  const field = useSavedText(joinList(carnet.wishlists[tier]), (value) =>
-    act("setWishlist", { tier, items: parseList(value) }),
-  );
+/** Lit un montant saisi : "" → null, "12,5" → 12.5 ; undefined si la saisie n'est pas un montant positif. */
+function parseAmount(raw: string): number | null | undefined {
+  const s = raw.trim().replace(",", ".");
+  if (s === "") return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+/** Libellé + montant, pour ajouter un élément ou en modifier un. */
+function WishlistItemForm({
+  tier,
+  item,
+  onDone,
+}: {
+  tier: RewardTierId;
+  item?: WishlistItem;
+  onDone?: () => void;
+}) {
+  const { act, busy } = useCarnet();
+  const [label, setLabel] = useState(item?.label ?? "");
+  const [amount, setAmount] = useState(item?.amount == null ? "" : String(item.amount));
+  const [error, setError] = useState<string | null>(null);
+  const idPrefix = item ? `wish-${item.id}` : `wish-new-${tier}`;
+
+  const submit = async () => {
+    const value = parseAmount(amount);
+    if (!label.trim()) return setError("Donne un nom à la récompense.");
+    if (value === undefined) return setError("Le montant doit être un nombre positif, ou vide.");
+    try {
+      if (item) await act("updateWishlistItem", { id: item.id, label: label.trim(), amount: value });
+      else await act("addWishlistItem", { tier, label: label.trim(), amount: value });
+      setError(null);
+      if (item) onDone?.();
+      else {
+        setLabel("");
+        setAmount("");
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   return (
-    <div className={`field ${className}`}>
-      <label htmlFor={`wishlist-${tier}`} className="wishlist-label">
+    <form
+      className="wish-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <div className="wish-grid">
+        <div className="field">
+          <label htmlFor={`${idPrefix}-label`}>{item ? "Récompense" : "Nouvelle récompense"}</label>
+          <input
+            id={`${idPrefix}-label`}
+            type="text"
+            maxLength={200}
+            placeholder={PLACEHOLDERS[tier]}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor={`${idPrefix}-amount`}>Montant cagnottable</label>
+          <input
+            id={`${idPrefix}-amount`}
+            type="text"
+            inputMode="decimal"
+            placeholder="ex. 5"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+        <div className="wish-buttons">
+          {item ? (
+            <>
+              <Button type="submit" className="btn-compact" disabled={busy}>
+                Enregistrer
+              </Button>
+              <Button variant="outline" className="btn-compact" disabled={busy} onClick={onDone}>
+                Annuler
+              </Button>
+            </>
+          ) : (
+            <Button type="submit" className="btn-compact" disabled={busy}>
+              Ajouter
+            </Button>
+          )}
+        </div>
+      </div>
+      {error && <p className="feedback">{error}</p>}
+    </form>
+  );
+}
+
+function Wishlist({ tier }: { tier: RewardTierId }) {
+  const { carnet, act, busy } = useCarnet();
+  const [editing, setEditing] = useState<number | null>(null);
+  const { list, butin } = tierOf(tier);
+  const items = carnet.wishlists[tier] ?? [];
+
+  return (
+    <div className="skill-block wish-block">
+      <h3 className="wishlist-label">
         <TierSymbol tier={tier} />
         Liste des {list} ({butin})
-      </label>
-      <textarea
-        id={`wishlist-${tier}`}
-        rows={rows}
-        placeholder={placeholder}
-        value={field.value}
-        onChange={field.onChange}
-        onFocus={field.onFocus}
-        onBlur={field.onBlur}
-      />
+      </h3>
+      <ul className="skill-items">
+        {items.length === 0 && <li className="wish-empty">Rien dans cette liste pour l&apos;instant.</li>}
+        {items.map((item) =>
+          editing === item.id ? (
+            <li key={item.id} className="ex-editing">
+              <WishlistItemForm tier={tier} item={item} onDone={() => setEditing(null)} />
+            </li>
+          ) : (
+            <li key={item.id}>
+              <span>{item.label}</span>
+              <span className="sxp">
+                {item.amount == null ? (
+                  "—"
+                ) : (
+                  <>
+                    <Coin className="coin-inline" />
+                    {formatAmount(item.amount)}
+                  </>
+                )}{" "}
+                <button type="button" className="ex-del" title="Modifier" disabled={busy} onClick={() => setEditing(item.id)}>
+                  ✎
+                </button>
+                <button
+                  type="button"
+                  className="ex-del"
+                  title="Retirer"
+                  disabled={busy}
+                  onClick={() => act("archiveWishlistItem", { id: item.id }).catch(() => {})}
+                >
+                  ✕
+                </button>
+              </span>
+            </li>
+          ),
+        )}
+      </ul>
+      <WishlistItemForm tier={tier} />
     </div>
+  );
+}
+
+function WonRewards() {
+  const { carnet, act, busy } = useCarnet();
+  const won = carnet.wonRewards ?? [];
+  if (won.length === 0) return null;
+  return (
+    <>
+      <h3>Récompenses gagnées</h3>
+      <p className="hint">Prends-la tout de suite, ou mets son montant de côté dans la cagnotte.</p>
+      <ul className="skill-items won-rewards">
+        {won.map((r) => (
+          <li key={r.id}>
+            <span>
+              <TierSymbol tier={r.tier} className="log-tier" />
+              {r.description ?? r.name}
+              <small>{r.description ? r.name : "liste vide : un plaisir libre"}</small>
+            </span>
+            <span className="won-actions">
+              <Button variant="outline" disabled={busy} onClick={() => act("takeReward", { id: r.id }).catch(() => {})}>
+                Prendre
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={busy || r.amount == null}
+                title={r.amount == null ? "Pas de montant pour cette récompense" : undefined}
+                onClick={() => act("bankReward", { id: r.id }).catch(() => {})}
+              >
+                Cagnotter
+                {r.amount != null && (
+                  <span>
+                    +<Coin className="coin-inline coin-after" />
+                    {formatAmount(r.amount)}
+                  </span>
+                )}
+              </Button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
 function Cagnotte() {
   const { carnet, act, busy } = useCarnet();
-  const [label, setLabel] = useState("");
-  const [amount, setAmount] = useState("");
   const [cashLabel, setCashLabel] = useState("");
-
-  const handleAdd = async () => {
-    const value = parseFloat(amount);
-    if (Number.isNaN(value) || value <= 0) return;
-    try {
-      await act("addToCagnotte", { label: label.trim(), amount: value });
-      setLabel("");
-      setAmount("");
-    } catch {}
-  };
 
   const handleCashOut = async () => {
     try {
@@ -72,31 +222,16 @@ function Cagnotte() {
     <div className="panel">
       <h2>Cagnotte de Récompenses</h2>
       <p className="hint">
-        Une récompense obtenue mais non utilisée ? Note-la ici avec la valeur que tu lui donnes, et cumule jusqu&apos;à
-        pouvoir encaisser quelque chose de plus gros.
+        Chaque récompense gagnée au dé arrive ici. Prends-la, ou cagnotte-la pour cumuler jusqu&apos;à pouvoir encaisser
+        quelque chose de plus gros.
       </p>
-      <div className="level-row">
+      <WonRewards />
+      <div className="level-row mt-16">
         <span className="lvl">Cagnotte</span>
-        <span className="xp-num">{carnet.cagnotte.total}</span>
-      </div>
-      <div className="identity cols-2-1-1">
-        <div className="field">
-          <label htmlFor="cagnotteLabel">Récompense mise de côté</label>
-          <input
-            id="cagnotteLabel"
-            type="text"
-            placeholder="ex. Petite trouvaille non utilisée"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="cagnotteAmount">Valeur</label>
-          <input id="cagnotteAmount" type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} />
-        </div>
-        <Button disabled={busy} onClick={handleAdd}>
-          Ajouter
-        </Button>
+        <span className="xp-num">
+          <Coin className="coin-inline" />
+          {formatAmount(carnet.cagnotte.total)}
+        </span>
       </div>
       <div className="mb-16">
         {carnet.cagnotte.entries.length === 0 ? (
@@ -105,8 +240,9 @@ function Cagnotte() {
           carnet.cagnotte.entries.map((e) => (
             <div className="log-entry" key={e.id}>
               <span>{e.label}</span>
+              <span className="lxp">+{formatAmount(e.amount)}</span>
               <span className="ldate">
-                {new Date(e.at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })} · +{e.amount}
+                {new Date(e.at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
               </span>
             </div>
           ))
@@ -214,6 +350,17 @@ export function RecompensesTab() {
               <div className={`tier-badge ${resultTier.tier}`}>{resultTier.label}</div>
               <div className="rname">{result.name}</div>
               <div className="rdesc">{result.description ?? emptyWishlistText(resultTier)}</div>
+              {carnet.wonRewards.some((w) => w.id === result.id) && (
+                <div className="rnext">
+                  {result.amount != null && (
+                    <>
+                      <Coin className="coin-inline" />
+                      {formatAmount(result.amount)} ·{" "}
+                    </>
+                  )}
+                  À prendre ou cagnotter, plus bas.
+                </div>
+              )}
             </div>
           )}
           {carnet.rerollAvailable && (
@@ -222,16 +369,19 @@ export function RecompensesTab() {
             </Button>
           )}
         </div>
-
-        <p className="hint wishlist-hint">
-          Une liste par rang de butin, éléments séparés par « ; ».
-        </p>
-        {WISHLISTS.map((w, i) => (
-          <WishlistField key={w.tier} {...w} className={i === 0 ? "" : "mt"} />
-        ))}
       </div>
 
       <Cagnotte />
+
+      <div className="panel">
+        <h2>Listes de Butin</h2>
+        <p className="hint">
+          Le dé tire une récompense au hasard dans la liste de son rang. Donne-lui un montant pour pouvoir la cagnotter.
+        </p>
+        {REWARD_TIERS.map((t) => (
+          <Wishlist key={t.tier} tier={t.tier} />
+        ))}
+      </div>
       {overlay && <DiceRollOverlay reward={overlay.reward} onDone={endOverlay} />}
     </>
   );

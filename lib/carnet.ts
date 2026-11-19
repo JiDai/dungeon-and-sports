@@ -2,15 +2,6 @@
 import { CATEGORY_LABELS, REWARD_TIERS } from "./data";
 import type { CarnetView, Category, ChronicleEntry, Exercise, RewardTier, RewardTierId } from "./types";
 
-export function parseList(str: string): string[] {
-  return (str || "")
-    .split(";")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-export const joinList = (items: string[]) => items.join(" ; ");
-
 export function formatDateFR(isoDate: string): string {
   const [, m, d] = isoDate.split("-");
   return `${d}/${m}`;
@@ -45,7 +36,7 @@ export const CHRONICLE_TYPES: { id: ChronicleType; label: string }[] = [
 export function chronicleTypes(e: ChronicleEntry): ChronicleType[] {
   const late = e.late || e.activity_kind === "catch_up";
   if (e.kind === "activity") return [e.activity_kind === "steps" ? "steps" : "exercise", ...(late ? (["late"] as const) : [])];
-  if (e.kind === "reward") return ["reward"];
+  if (e.kind === "reward" || e.kind === "reward_taken" || e.kind === "reward_banked") return ["reward"];
   if (e.kind === "level_up") return ["level_up"];
   return [];
 }
@@ -64,6 +55,8 @@ export interface ChronicleLine {
   bonus: number | null;
   /** Rang d'un tirage, rappelé par son symbole. */
   tier?: RewardTierId;
+  /** Mouvement de cagnotte : pièce d'or devant le titre. */
+  coin?: boolean;
 }
 
 /** Premier jour où une quête du jour rapporte un bonus (migration du 02/11, appliquée le soir même). */
@@ -94,14 +87,25 @@ export function chronicleLine(e: ChronicleEntry, questBonus: number): ChronicleL
       const rest = [e.is_reroll ? "retirage" : "", e.detail ?? ""].filter(Boolean).join(" — ");
       return { ...line(e.name ?? "", rest, ["Tirage"]), tier: e.tier ?? undefined };
     }
+    case "reward_taken":
+      return { ...line("🎁 Récompense prise", e.detail ?? e.name ?? "", ["Tirage"]), tier: e.tier ?? undefined };
+    case "reward_banked":
+      return {
+        ...line(`Cagnottée +${formatAmount(e.amount ?? 0)}`, e.detail ?? e.name ?? "", ["Tirage"]),
+        tier: e.tier ?? undefined,
+        coin: true,
+      };
     case "cagnotte_add":
-      return line(`🪙 Cagnotte +${e.amount}`, e.name ?? "");
+      return { ...line(`Cagnotte +${formatAmount(e.amount ?? 0)}`, e.name ?? ""), coin: true };
     case "cagnotte_cashout":
       return line(`🏆 Cagnotte encaissée (${e.amount})`, e.detail || "récompense libre");
     default:
       return line(e.detail ?? "", "", [], e.xp);
   }
 }
+
+/** Montant sans décimales inutiles : 5, 12,5. */
+export const formatAmount = (n: number) => Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 });
 
 export const emptyWishlistText = (tier: RewardTier) =>
   `Ta liste des ${tier.list} est encore vide — ajoutes-y quelque chose pour la prochaine fois. En attendant, offre-toi un plaisir libre.`;

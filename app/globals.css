@@ -233,6 +233,28 @@ h1{
 .field .wishlist-label{display:flex; align-items:center; gap:6px;}
 .wishlist-hint{margin-top:20px;}
 .wishlist-label .tier-symbol{flex:none; width:14px; height:14px;}
+h3.wishlist-label{display:flex; align-items:center; gap:6px;}
+.wish-form{margin-top:4px;}
+.skill-block.wish-block{margin-bottom:32px;}
+.skill-block.wish-block:last-child{margin-bottom:0;}
+/* Libellé | montant | boutons : mêmes colonnes pour l'ajout et l'édition, sur une seule ligne. */
+.wish-grid{display:grid; grid-template-columns:minmax(0, 1fr) 11em auto; gap:12px; align-items:end;}
+.wish-grid .field label{white-space:nowrap;}
+.wish-buttons{display:flex; gap:8px;}
+.btn.btn-compact{--btn-pad-x:14px;}
+.coin{display:inline-block; width:1em; height:1em; flex:none; vertical-align:-.15em;}
+.coin-inline{margin-right:3px;}
+.coin-after{margin-left:2px;}
+.skill-items li.wish-empty{color:var(--text-soft); font-size:13px;}
+.reward-card .rnext{margin-top:8px; font-size:12px; color:var(--text-soft);}
+.won-rewards li{align-items:center;}
+.won-actions{display:flex; gap:8px; flex:none;}
+@media (max-width:480px){
+  .wish-grid{grid-template-columns:minmax(0, 1fr) auto;}
+  .wish-grid > .field:first-child{grid-column:1 / -1;}
+  .won-rewards li{flex-direction:column; align-items:stretch;}
+  .won-actions .btn{flex:1;}
+}
 
 .d6.commun, .d6.rare, .d6.ultrarare, .d6.legendaire{
   border-color:var(--tier-color); color:var(--tier-dark);
