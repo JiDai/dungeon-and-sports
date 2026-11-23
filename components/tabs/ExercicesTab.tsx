@@ -187,7 +187,8 @@ export function ExercicesTab() {
 
 /** Formulaire de modification d'un exercice, à la place de sa ligne. */
 function ExerciseEditor({ exercise, onDone }: { exercise: Exercise; onDone: (message?: string) => void }) {
-  const { act, busy } = useCarnet();
+  const { carnet, act, busy } = useCarnet();
+  const [category, setCategory] = useState<Category>(exercise.category);
   const [flavor, setFlavor] = useState(exercise.flavor);
   const [name, setName] = useState(exercise.name);
   const [detail, setDetail] = useState(exercise.detail);
@@ -206,13 +207,18 @@ function ExerciseEditor({ exercise, onDone }: { exercise: Exercise; onDone: (mes
       setError("L'XP va de 1 à 50.");
       return;
     }
+    const moved = category !== exercise.category;
+    if (moved && poolFor(carnet, exercise.category).length <= 1) {
+      setError("Garde au moins un exercice par catégorie.");
+      return;
+    }
     try {
-      await act("updateExercise", { id: exercise.id, flavor: flavor.trim(), name: trimmed, detail: detail.trim(), xp });
+      await act("updateExercise", { id: exercise.id, category, flavor: flavor.trim(), name: trimmed, detail: detail.trim(), xp });
     } catch (e) {
       setError((e as Error).message);
       return;
     }
-    onDone("Exercice modifié.");
+    onDone(moved ? `Exercice modifié et déplacé dans ${CATEGORY_LABELS[category]}.` : "Exercice modifié.");
   };
 
   return (
@@ -223,6 +229,16 @@ function ExerciseEditor({ exercise, onDone }: { exercise: Exercise; onDone: (mes
         void save();
       }}
     >
+      <div className="field mb">
+        <label htmlFor={`${id}Category`}>Catégorie</label>
+        <select id={`${id}Category`} value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+          {CATEGORY_ORDER.map((c) => (
+            <option key={c} value={c}>
+              {CATEGORY_LABELS[c]}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="field mb">
         <label htmlFor={`${id}Name`}>Exercice</label>
         <input id={`${id}Name`} type="text" maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />

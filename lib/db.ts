@@ -131,6 +131,8 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
     "update_exercise",
     {
       p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice"),
+      // Absente : la catégorie ne change pas.
+      p_category: a.category === undefined ? null : category(a.category),
       p_flavor: text(a.flavor, 80, "nom de quête"),
       p_name: text(a.name, 120, "exercice"),
       p_detail: text(a.detail, 300, "détail"),
