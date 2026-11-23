@@ -23,9 +23,9 @@ export const REWARD_TIERS: RewardTier[] = [
 
 export const TABS: { id: TabId; label: string }[] = [
   { id: "fiche", label: "🌾 Fiche" },
-  { id: "exercices", label: "🌿 Compétences" },
   { id: "quetes", label: "🗺️ Quêtes" },
   { id: "suivi", label: "🦋 Suivi" },
   { id: "recompenses", label: "🎀 Récompenses" },
   { id: "chronique", label: "📖 Chronique" },
+  { id: "exercices", label: "🌿 Compétences" },
 ];
