@@ -142,7 +142,15 @@ const ACTIONS: Record<string, (a: Args) => [fn: string, args: Args]> = {
   resetExercise: (a) => ["reset_exercise", { p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice") }],
   archiveExercise: (a) => ["archive_exercise", { p_exercise: int(a.id, 1, Number.MAX_SAFE_INTEGER, "exercice") }],
   restoreDefaultExercises: () => ["restore_default_exercises", {}],
-  setWeight: (a) => ["set_weight", { p_day: day(a.day), p_weight_kg: decimal(a.weightKg, 20, 400, "poids") }],
+  // Mesures du jour : un champ absent (null) garde la valeur déjà notée ; il en faut au moins une.
+  setMeasures: (a) => [
+    "set_measures",
+    {
+      p_day: day(a.day),
+      p_weight_kg: a.weightKg === null || a.weightKg === undefined ? null : decimal(a.weightKg, 20, 400, "poids"),
+      p_waist_cm: a.waistCm === null || a.waistCm === undefined ? null : decimal(a.waistCm, 30, 250, "tour de taille"),
+    },
+  ],
   deleteWeight: (a) => ["delete_weight", { p_day: day(a.day) }],
   cashOutCagnotte: (a) => ["cash_out_cagnotte", { p_description: text(a.description, 200, "description") }],
   drawReward: (a) => ["draw_reward", { p_reroll: a.reroll === true }],

@@ -70,7 +70,8 @@ export interface CarnetView {
   /** Tirages gagnés qui attendent une décision : prendre ou cagnotter. */
   wonRewards: WonReward[];
   cagnotte: { total: number; entries: { id: number; label: string; amount: number; at: string }[] };
-  weights: { day: string; weightKg: number }[];
+  /** Mesures du jour : poids et tour de taille, chacun facultatif (au moins un des deux). */
+  weights: { day: string; weightKg: number | null; waistCm: number | null }[];
   chronicle: ChronicleEntry[];
 }
 
@@ -164,6 +165,6 @@ export interface CarnetExport {
     reward_draw_ref?: number | null;
     created_at: string;
   }[];
-  weights: { day: string; weight_kg: number; created_at: string }[];
+  weights: { day: string; weight_kg: number | null; waist_cm?: number | null; created_at: string }[];
   legacy_log: { date_label: string; text: string; xp: number | null; created_at: string }[];
 }
